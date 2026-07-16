@@ -1,0 +1,11 @@
+* text=auto
+
+# 可执行脚本固定使用 Unix 换行。
+*.sh text eol=lf
+gradlew text eol=lf
+
+# Windows Wrapper 固定使用 Windows 换行。
+*.bat text eol=crlf
+
+# Gradle Wrapper 本体按二进制保存。
+*.jar binary

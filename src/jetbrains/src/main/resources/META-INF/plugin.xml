@@ -1,0 +1,33 @@
+<idea-plugin>
+    <id>com.codebasenotes.jetbrains</id>
+    <name>Codebase Notes</name>
+    <vendor>Codebase Notes</vendor>
+    <description><![CDATA[
+        Share short file and directory notes through a repository-local .codebase-notes.json file.
+    ]]></description>
+
+    <depends>com.intellij.modules.platform</depends>
+    <resource-bundle>messages.CodebaseNotesBundle</resource-bundle>
+
+    <extensions defaultExtensionNs="com.intellij">
+        <projectService serviceImplementation="com.codebasenotes.jetbrains.CodebaseNotesProjectService"/>
+        <projectViewNodeDecorator implementation="com.codebasenotes.jetbrains.ProjectViewNoteDecorator"/>
+        <notificationGroup id="Codebase Notes" displayType="BALLOON"/>
+    </extensions>
+
+    <actions>
+        <group id="CodebaseNotes.Group" popup="true">
+            <action
+                id="CodebaseNotes.EditNote"
+                class="com.codebasenotes.jetbrains.EditNoteAction"/>
+            <separator/>
+            <action
+                id="CodebaseNotes.RemoveNote"
+                class="com.codebasenotes.jetbrains.RemoveNoteAction"/>
+            <add-to-group
+                group-id="ProjectViewPopupMenu"
+                anchor="after"
+                relative-to-action="ProjectViewEditSource"/>
+        </group>
+    </actions>
+</idea-plugin>
