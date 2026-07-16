@@ -1,0 +1,50 @@
+{
+  "operation": "validate-key",
+  "cases": [
+    {
+      "id": "path/root",
+      "input": {
+        "key": "."
+      },
+      "expected": {
+        "valid": true
+      }
+    },
+    {
+      "id": "path/normal",
+      "input": {
+        "key": "src/payment/App.ts"
+      },
+      "expected": {
+        "valid": true
+      }
+    },
+    {
+      "id": "path/reject-parent",
+      "input": {
+        "key": "src/../App.ts"
+      },
+      "expected": {
+        "valid": false
+      }
+    },
+    {
+      "id": "path/reject-backslash",
+      "input": {
+        "key": "src\\App.ts"
+      },
+      "expected": {
+        "valid": false
+      }
+    },
+    {
+      "id": "path/reject-config",
+      "input": {
+        "key": "pkg/.codebase-notes.json"
+      },
+      "expected": {
+        "valid": false
+      }
+    }
+  ]
+}

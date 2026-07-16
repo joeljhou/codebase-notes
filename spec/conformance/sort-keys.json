@@ -1,0 +1,30 @@
+{
+  "operation": "sort-keys",
+  "cases": [
+    {
+      "id": "sort/scalar-values",
+      "input": {
+        "keys": [
+          "😀",
+          "中",
+          "a/b",
+          "a",
+          "A",
+          "é",
+          "é"
+        ]
+      },
+      "expected": {
+        "keys": [
+          "A",
+          "a",
+          "a/b",
+          "é",
+          "é",
+          "中",
+          "😀"
+        ]
+      }
+    }
+  ]
+}

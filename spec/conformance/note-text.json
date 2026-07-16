@@ -1,0 +1,37 @@
+{
+  "operation": "parse-generated-note",
+  "cases": [
+    {
+      "id": "note-text/2000-emoji",
+      "input": {
+        "character": "😀",
+        "count": 2000
+      },
+      "expected": {
+        "mode": "writable-v1"
+      }
+    },
+    {
+      "id": "note-text/2001-emoji",
+      "input": {
+        "character": "😀",
+        "count": 2001
+      },
+      "expected": {
+        "mode": "invalid",
+        "code": "CBN001_INVALID_CONFIG"
+      }
+    },
+    {
+      "id": "note-text/whitespace",
+      "input": {
+        "character": " ",
+        "count": 1
+      },
+      "expected": {
+        "mode": "invalid",
+        "code": "CBN001_INVALID_CONFIG"
+      }
+    }
+  ]
+}

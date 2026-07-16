@@ -1,0 +1,58 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Codebase Notes v1",
+  "description": "Editor-neutral notes attached to configuration-root-relative file and directory paths.",
+  "type": "object",
+  "required": [
+    "version",
+    "notes"
+  ],
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "format": "uri-reference"
+    },
+    "version": {
+      "type": "integer",
+      "const": 1
+    },
+    "notes": {
+      "type": "object",
+      "propertyNames": {
+        "pattern": "^(?:\\.|(?!/)(?![A-Za-z]:/)(?!.*\\\\)(?!.*//)(?!.*\\/$)(?!\\.{1,2}(?:/|$))(?!.*\\/\\.{1,2}(?:/|$))(?!\\.codebase-notes\\.json$)(?!.*\\/\\.codebase-notes\\.json$)(?!.*[\\u0000-\\u001F\\u007F]).+)$"
+      },
+      "additionalProperties": {
+        "$ref": "#/$defs/note"
+      }
+    }
+  },
+  "additionalProperties": true,
+  "$defs": {
+    "note": {
+      "type": "object",
+      "required": [
+        "text"
+      ],
+      "properties": {
+        "text": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2000,
+          "pattern": "\\S"
+        },
+        "style": {
+          "type": "string",
+          "enum": [
+            "default",
+            "muted",
+            "info",
+            "success",
+            "warning",
+            "danger"
+          ]
+        }
+      },
+      "additionalProperties": true
+    }
+  }
+}

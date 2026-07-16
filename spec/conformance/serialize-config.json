@@ -1,0 +1,35 @@
+{
+  "operation": "serialize-config",
+  "cases": [
+    {
+      "id": "serialize/stable-unknown-fields",
+      "input": {
+        "config": {
+          "z": [
+            1,
+            "x"
+          ],
+          "notes": {
+            "😀": {
+              "future": {
+                "b": true,
+                "a": false
+              },
+              "text": "emoji"
+            },
+            "a.ts": {
+              "style": "info",
+              "text": "A"
+            }
+          },
+          "version": 1,
+          "$schema": "./spec/codebase-notes.schema.json",
+          "a": -0
+        }
+      },
+      "expected": {
+        "text": "{\n  \"$schema\": \"./spec/codebase-notes.schema.json\",\n  \"version\": 1,\n  \"notes\": {\n    \"a.ts\": {\n      \"text\": \"A\",\n      \"style\": \"info\"\n    },\n    \"😀\": {\n      \"text\": \"emoji\",\n      \"future\": {\n        \"a\": false,\n        \"b\": true\n      }\n    }\n  },\n  \"a\": 0,\n  \"z\": [\n    1,\n    \"x\"\n  ]\n}\n"
+      }
+    }
+  ]
+}

@@ -1,0 +1,51 @@
+{
+  "operation": "move",
+  "cases": [
+    {
+      "id": "move/directory",
+      "input": {
+        "notes": {
+          "src/old": {
+            "text": "目录"
+          },
+          "src/old/a.ts": {
+            "text": "A"
+          },
+          "keep.ts": {
+            "text": "K"
+          }
+        },
+        "oldPrefix": "src/old",
+        "newPrefix": "src/new"
+      },
+      "expected": {
+        "kind": "planned",
+        "mapping": {
+          "src/old": "src/new",
+          "src/old/a.ts": "src/new/a.ts"
+        }
+      }
+    },
+    {
+      "id": "move/destination-conflict",
+      "input": {
+        "notes": {
+          "src/old/a.ts": {
+            "text": "A"
+          },
+          "src/new/a.ts": {
+            "text": "existing"
+          }
+        },
+        "oldPrefix": "src/old",
+        "newPrefix": "src/new"
+      },
+      "expected": {
+        "kind": "conflict",
+        "paths": [
+          "src/new/a.ts"
+        ]
+      }
+    }
+  ]
+}

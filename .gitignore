@@ -1,0 +1,28 @@
+# 依赖和构建缓存
+node_modules/
+dist/
+build/
+out/
+coverage/
+.gradle/
+.kotlin/
+.intellijPlatform/
+.vscode-test/
+
+# IDE 和本机配置
+.idea/
+local.properties
+.DS_Store
+
+# 打包产物和日志
+artifacts/
+*.vsix
+*.zip
+*.log
+
+# Codebase Notes 写入时产生的临时协调文件
+.codebase-notes.json.lock
+.codebase-notes.json.tmp.*
+
+# 构建时从根 Schema 生成的 VS Code 资源
+src/vscode/resources/

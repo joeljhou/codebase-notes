@@ -1,0 +1,24 @@
+{
+  "operation": "parse-config",
+  "cases": [
+    {
+      "id": "forward/unknown-fields",
+      "input": {
+        "text": "{\"version\":1,\"notes\":{\"src/a.ts\":{\"text\":\"A\",\"future\":{\"enabled\":true}}},\"rootFuture\":[1,\"x\"]}"
+      },
+      "expected": {
+        "mode": "writable-v1"
+      }
+    },
+    {
+      "id": "forward/future-shape-not-validated-as-v1",
+      "input": {
+        "text": "{\"version\":3,\"notes\":\"future-format\"}"
+      },
+      "expected": {
+        "mode": "readonly-future",
+        "code": "CBN002_FUTURE_VERSION"
+      }
+    }
+  ]
+}

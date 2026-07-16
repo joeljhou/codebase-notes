@@ -1,0 +1,65 @@
+{
+  "operation": "merge",
+  "cases": [
+    {
+      "id": "merge/different-keys",
+      "input": {
+        "base": {
+          "a.ts": {
+            "text": "A"
+          }
+        },
+        "disk": {
+          "a.ts": {
+            "text": "A"
+          },
+          "b.ts": {
+            "text": "B"
+          }
+        },
+        "intent": {
+          "a.ts": {
+            "text": "A2"
+          }
+        }
+      },
+      "expected": {
+        "kind": "merged",
+        "notes": {
+          "a.ts": {
+            "text": "A2"
+          },
+          "b.ts": {
+            "text": "B"
+          }
+        }
+      }
+    },
+    {
+      "id": "merge/same-key-conflict",
+      "input": {
+        "base": {
+          "a.ts": {
+            "text": "A"
+          }
+        },
+        "disk": {
+          "a.ts": {
+            "text": "disk"
+          }
+        },
+        "intent": {
+          "a.ts": {
+            "text": "mine"
+          }
+        }
+      },
+      "expected": {
+        "kind": "conflict",
+        "paths": [
+          "a.ts"
+        ]
+      }
+    }
+  ]
+}

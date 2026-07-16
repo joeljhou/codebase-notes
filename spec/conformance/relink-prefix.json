@@ -1,0 +1,27 @@
+{
+  "operation": "move",
+  "cases": [
+    {
+      "id": "relink/prefix",
+      "input": {
+        "notes": {
+          "legacy/a.ts": {
+            "text": "A"
+          },
+          "legacy/nested/b.ts": {
+            "text": "B"
+          }
+        },
+        "oldPrefix": "legacy",
+        "newPrefix": "src/new"
+      },
+      "expected": {
+        "kind": "planned",
+        "mapping": {
+          "legacy/a.ts": "src/new/a.ts",
+          "legacy/nested/b.ts": "src/new/nested/b.ts"
+        }
+      }
+    }
+  ]
+}
