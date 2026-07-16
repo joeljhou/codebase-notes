@@ -1,0 +1,341 @@
+{
+  "version": 1,
+  "notes": {
+    ".editorconfig": {
+      "text": "编辑器格式约定"
+    },
+    ".gitignore": {
+      "text": "生成物与临时文件忽略规则"
+    },
+    "src/vscode/.nvmrc": {
+      "text": "Node.js 22 版本锁定"
+    },
+    "LICENSE": {
+      "text": "项目 MIT 许可证",
+      "style": "muted"
+    },
+    "README.md": {
+      "text": "项目上手与安装指南"
+    },
+    "VERSION": {
+      "text": "★ 双端插件唯一版本源",
+      "style": "warning"
+    },
+    "deploy.sh": {
+      "text": "★ 双端初始化、测试、构建与打包入口",
+      "style": "warning"
+    },
+    "src": {
+      "text": "JetBrains 与 VS Code 源码"
+    },
+    "src/jetbrains": {
+      "text": "JetBrains 插件实现"
+    },
+    "src/jetbrains/LICENSE": {
+      "text": "JetBrains 插件许可证",
+      "style": "muted"
+    },
+    "src/jetbrains/README.md": {
+      "text": "JetBrains 插件说明"
+    },
+    "src/jetbrains/THIRD_PARTY_NOTICES.md": {
+      "text": "JetBrains 第三方声明",
+      "style": "muted"
+    },
+    "src/jetbrains/build.gradle.kts": {
+      "text": "★ JetBrains 构建入口",
+      "style": "warning"
+    },
+    "src/jetbrains/gradle.properties": {
+      "text": "Gradle 运行参数"
+    },
+    "src/jetbrains/gradle/wrapper": {
+      "text": "Gradle Wrapper 版本与程序",
+      "style": "muted"
+    },
+    "src/jetbrains/gradlew": {
+      "text": "Unix Gradle 启动脚本",
+      "style": "muted"
+    },
+    "src/jetbrains/gradlew.bat": {
+      "text": "Windows Gradle 启动脚本",
+      "style": "muted"
+    },
+    "src/jetbrains/settings.gradle.kts": {
+      "text": "Gradle 项目定义"
+    },
+    "src/jetbrains/src/main/kotlin/com/codebasenotes/core": {
+      "text": "JetBrains 纯核心逻辑"
+    },
+    "src/jetbrains/src/main/kotlin/com/codebasenotes/core/AtomicFileStore.kt": {
+      "text": "★ 文件锁与原子写入",
+      "style": "info"
+    },
+    "src/jetbrains/src/main/kotlin/com/codebasenotes/core/ConfigParser.kt": {
+      "text": "★ 配置解析与兼容校验",
+      "style": "info"
+    },
+    "src/jetbrains/src/main/kotlin/com/codebasenotes/core/ConfigRepository.kt": {
+      "text": "★ JetBrains 存储核心",
+      "style": "warning"
+    },
+    "src/jetbrains/src/main/kotlin/com/codebasenotes/core/ConfigSerializer.kt": {
+      "text": "稳定 JSON 序列化"
+    },
+    "src/jetbrains/src/main/kotlin/com/codebasenotes/core/Merge.kt": {
+      "text": "★ 三方合并与冲突检测",
+      "style": "info"
+    },
+    "src/jetbrains/src/main/kotlin/com/codebasenotes/core/Model.kt": {
+      "text": "核心数据与结果模型"
+    },
+    "src/jetbrains/src/main/kotlin/com/codebasenotes/core/Move.kt": {
+      "text": "路径移动与键迁移"
+    },
+    "src/jetbrains/src/main/kotlin/com/codebasenotes/core/PathPolicy.kt": {
+      "text": "★ 路径边界与安全校验",
+      "style": "info"
+    },
+    "src/jetbrains/src/main/kotlin/com/codebasenotes/jetbrains": {
+      "text": "IntelliJ Platform 适配层"
+    },
+    "src/jetbrains/src/main/kotlin/com/codebasenotes/jetbrains/CodebaseNotesProjectService.kt": {
+      "text": "★ JetBrains 运行入口",
+      "style": "warning"
+    },
+    "src/jetbrains/src/main/kotlin/com/codebasenotes/jetbrains/NoteActions.kt": {
+      "text": "备注编辑与删除操作"
+    },
+    "src/jetbrains/src/main/kotlin/com/codebasenotes/jetbrains/ProjectViewNoteDecorator.kt": {
+      "text": "Project View 备注展示"
+    },
+    "src/jetbrains/src/main/resources/META-INF/plugin.xml": {
+      "text": "★ JetBrains 插件注册清单",
+      "style": "warning"
+    },
+    "src/jetbrains/src/test/kotlin/com/codebasenotes/core": {
+      "text": "JetBrains 核心测试"
+    },
+    "src/jetbrains/src/test/kotlin/com/codebasenotes/core/ConformanceTest.kt": {
+      "text": "共享协议一致性测试"
+    },
+    "src/jetbrains/src/test/kotlin/com/codebasenotes/core/CoreTest.kt": {
+      "text": "JetBrains 核心行为测试"
+    },
+    "src/vscode": {
+      "text": "VS Code 插件实现"
+    },
+    "src/vscode/LICENSE": {
+      "text": "VS Code 插件许可证",
+      "style": "muted"
+    },
+    "src/vscode/README.md": {
+      "text": "VS Code 插件说明"
+    },
+    "src/vscode/THIRD_PARTY_NOTICES.md": {
+      "text": "VS Code 第三方声明",
+      "style": "muted"
+    },
+    "src/vscode/integration": {
+      "text": "VS Code 集成测试"
+    },
+    "src/vscode/integration/extension.test.cjs": {
+      "text": "插件加载与交互测试"
+    },
+    "src/vscode/package.json": {
+      "text": "★ VS Code 插件注册清单",
+      "style": "warning"
+    },
+    "src/vscode/resources": {
+      "text": "构建生成资源",
+      "style": "muted"
+    },
+    "src/vscode/resources/codebase-notes.schema.json": {
+      "text": "构建生成的 Schema 副本",
+      "style": "muted"
+    },
+    "src/vscode/scripts": {
+      "text": "VS Code 构建脚本"
+    },
+    "src/vscode/scripts/build.mjs": {
+      "text": "esbuild 打包脚本"
+    },
+    "src/vscode/scripts/clean.mjs": {
+      "text": "构建产物清理脚本"
+    },
+    "src/vscode/scripts/copy-schema.mjs": {
+      "text": "Schema 复制脚本"
+    },
+    "src/vscode/scripts/prepare-integration-workspace.mjs": {
+      "text": "集成测试项目生成器"
+    },
+    "src/vscode/src/core": {
+      "text": "VS Code 纯核心逻辑"
+    },
+    "src/vscode/src/core/file-store.ts": {
+      "text": "★ 文件锁与原子写入",
+      "style": "info"
+    },
+    "src/vscode/src/core/merge.ts": {
+      "text": "★ 三方合并与冲突检测",
+      "style": "info"
+    },
+    "src/vscode/src/core/move.ts": {
+      "text": "路径移动与键迁移"
+    },
+    "src/vscode/src/core/parser.ts": {
+      "text": "★ 配置解析与兼容校验",
+      "style": "info"
+    },
+    "src/vscode/src/core/path-policy.ts": {
+      "text": "★ 路径边界与安全校验",
+      "style": "info"
+    },
+    "src/vscode/src/core/repository.ts": {
+      "text": "★ VS Code 存储核心",
+      "style": "warning"
+    },
+    "src/vscode/src/core/search.ts": {
+      "text": "备注搜索与排序"
+    },
+    "src/vscode/src/core/serializer.ts": {
+      "text": "稳定 JSON 序列化"
+    },
+    "src/vscode/src/core/types.ts": {
+      "text": "核心类型与诊断码"
+    },
+    "src/vscode/src/extension.ts": {
+      "text": "★ VS Code 运行入口",
+      "style": "warning"
+    },
+    "src/vscode/src/platform": {
+      "text": "VS Code 工作区适配层"
+    },
+    "src/vscode/src/platform/workspace-manager.ts": {
+      "text": "★ 工作区与文件事件中枢",
+      "style": "info"
+    },
+    "src/vscode/src/test": {
+      "text": "VS Code 单元测试"
+    },
+    "src/vscode/src/test/core.test.ts": {
+      "text": "纯核心行为测试"
+    },
+    "src/vscode/src/test/fixtures.test.ts": {
+      "text": "共享协议一致性测试"
+    },
+    "src/vscode/src/test/helpers.ts": {
+      "text": "测试辅助工具",
+      "style": "muted"
+    },
+    "src/vscode/src/test/note-input.test.ts": {
+      "text": "备注输入测试"
+    },
+    "src/vscode/src/test/repository.test.ts": {
+      "text": "并发与文件写入测试"
+    },
+    "src/vscode/src/ui": {
+      "text": "VS Code 用户界面"
+    },
+    "src/vscode/src/ui/commands.ts": {
+      "text": "备注命令注册"
+    },
+    "src/vscode/src/ui/decoration-provider.ts": {
+      "text": "Explorer badge 与 tooltip"
+    },
+    "src/vscode/src/ui/note-input.ts": {
+      "text": "备注输入与校验"
+    },
+    "src/vscode/src/ui/tree-provider.ts": {
+      "text": "Annotated Files 视图"
+    },
+    "src/vscode/tsconfig.json": {
+      "text": "TypeScript 编译配置"
+    },
+    "docs": {
+      "text": "设计与维护文档"
+    },
+    "docs/README.md": {
+      "text": "文档索引与维护规则"
+    },
+    "docs/platform/reports": {
+      "text": "平台评审记录"
+    },
+    "docs/platform/reports/R20260717_platform_codebase_notes_design_review.md": {
+      "text": "设计评审结论"
+    },
+    "docs/platform/specs": {
+      "text": "平台规范与方案"
+    },
+    "docs/platform/specs/S20260717_platform_codebase_notes_implementation.md": {
+      "text": "跨编辑器实现方案"
+    },
+    "docs/platform/specs/S20260717_platform_codebase_notes_integration_test_plan.md": {
+      "text": "双端集成测试计划"
+    },
+    "docs/platform/specs/S20260717_platform_codebase_notes_protocol.md": {
+      "text": "★ v1 协议权威说明",
+      "style": "warning"
+    },
+    "src/vscode/package-lock.json": {
+      "text": "npm 依赖版本快照",
+      "style": "muted"
+    },
+    "scripts": {
+      "text": "跨平台公共工程脚本"
+    },
+    "scripts/verify-all.sh": {
+      "text": "★ 双端全量验证入口",
+      "style": "warning"
+    },
+    "scripts/verify-config-contracts.mjs": {
+      "text": "Schema 与 fixture 校验"
+    },
+    "scripts/version.mjs": {
+      "text": "全局版本同步与一致性校验"
+    },
+    "spec": {
+      "text": "跨编辑器共享协议"
+    },
+    "spec/codebase-notes.schema.json": {
+      "text": "★ 配置格式唯一契约",
+      "style": "warning"
+    },
+    "spec/conformance": {
+      "text": "跨语言一致性用例"
+    },
+    "spec/conformance/forward-compatibility.json": {
+      "text": "未来版本兼容用例"
+    },
+    "spec/conformance/move-directory.json": {
+      "text": "目录移动用例"
+    },
+    "spec/conformance/normalize-path.json": {
+      "text": "路径规范化用例"
+    },
+    "spec/conformance/note-text.json": {
+      "text": "备注文本边界用例"
+    },
+    "spec/conformance/parse-config.json": {
+      "text": "配置解析用例"
+    },
+    "spec/conformance/relink-prefix.json": {
+      "text": "目录重关联用例"
+    },
+    "spec/conformance/serialize-config.json": {
+      "text": "稳定序列化用例"
+    },
+    "spec/conformance/sort-keys.json": {
+      "text": "字段排序用例"
+    },
+    "spec/conformance/three-way-merge.json": {
+      "text": "三方合并用例"
+    },
+    "spec/examples": {
+      "text": "协议配置示例"
+    },
+    "spec/examples/basic.json": {
+      "text": "最小配置示例"
+    }
+  }
+}
