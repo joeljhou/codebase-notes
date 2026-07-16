@@ -1,0 +1,14 @@
+{
+  "extension.displayName": "Codebase Notes",
+  "extension.description": "Share file and directory notes with JetBrains IDEs through .codebase-notes.json.",
+  "command.category": "Codebase Notes",
+  "command.editNote.title": "Edit Text Note",
+  "command.removeNote.title": "Clear Note",
+  "command.searchNotes.title": "Search Notes",
+  "command.relinkNote.title": "Relink Note",
+  "command.relinkPrefix.title": "Relink Directory Prefix",
+  "command.refresh.title": "Refresh",
+  "submenu.label": "Codebase Notes",
+  "view.annotatedFiles.name": "Annotated Files",
+  "view.annotatedFiles.contextualTitle": "Codebase Notes"
+}

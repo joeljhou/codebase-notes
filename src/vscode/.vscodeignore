@@ -1,0 +1,17 @@
+src/**
+scripts/**
+tsconfig.json
+.nvmrc
+package-lock.json
+node_modules/**
+integration/**
+.vscode-test.mjs
+dist/core/**
+dist/platform/**
+dist/test/**
+dist/ui/**
+dist/**/*.d.ts
+**/*.map
+**/*.test.js
+**/*.test.d.ts
+**/*.test.js.map

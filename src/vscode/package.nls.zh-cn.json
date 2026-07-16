@@ -1,0 +1,14 @@
+{
+  "extension.displayName": "代码备注",
+  "extension.description": "通过 .codebase-notes.json 与 JetBrains IDE 共享文件和目录备注。",
+  "command.category": "代码备注",
+  "command.editNote.title": "编辑文字备注",
+  "command.removeNote.title": "清除备注",
+  "command.searchNotes.title": "搜索备注",
+  "command.relinkNote.title": "重新关联备注",
+  "command.relinkPrefix.title": "批量重新关联目录",
+  "command.refresh.title": "刷新",
+  "submenu.label": "代码备注",
+  "view.annotatedFiles.name": "已添加备注的文件",
+  "view.annotatedFiles.contextualTitle": "代码备注"
+}
