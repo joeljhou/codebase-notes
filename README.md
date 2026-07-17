@@ -58,10 +58,10 @@ java -version
 
 ## 2. 克隆并初始化
 
-把面试邀请中提供的仓库地址替换到下面的命令中：
+克隆 GitHub 上的公开仓库：
 
 ```bash
-git clone "仓库地址" codebase-notes
+git clone https://github.com/joeljhou/codebase-notes.git
 cd codebase-notes
 cd src/vscode
 nvm use       # 没有使用 nvm 可跳过
