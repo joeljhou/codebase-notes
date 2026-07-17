@@ -12,10 +12,10 @@ Codebase Notes 给仓库里的文件和目录添加共享备注。VS Code 和 Je
 
 ## 下载
 
-当前版本：`0.1.3`
+当前版本：`0.1.4`
 
-- [JetBrains 插件（ZIP）](https://github.com/joeljhou/codebase-notes/releases/download/v0.1.3/codebase-notes-jetbrains-0.1.3.zip)
-- [VS Code / TRAE CN 扩展（VSIX）](https://github.com/joeljhou/codebase-notes/releases/download/v0.1.3/codebase-notes-vscode-0.1.3.vsix)
+- [JetBrains 插件（ZIP）](https://github.com/joeljhou/codebase-notes/releases/download/v0.1.4/codebase-notes-jetbrains-0.1.4.zip)
+- [VS Code / TRAE CN 扩展（VSIX）](https://github.com/joeljhou/codebase-notes/releases/download/v0.1.4/codebase-notes-vscode-0.1.4.vsix)
 
 历史版本和更新说明见 [GitHub Releases](https://github.com/joeljhou/codebase-notes/releases)。
 
