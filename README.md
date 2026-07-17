@@ -10,6 +10,15 @@ Codebase Notes 给仓库里的文件和目录添加共享备注。VS Code 和 Je
 - 可安装的 VS Code VSIX 和 JetBrains ZIP；
 - 一次在日常 VS Code 与 IntelliJ IDEA 中完成的手动安装和双端联调。
 
+## 下载
+
+当前版本：`0.1.2`
+
+- [JetBrains 插件（ZIP）](https://github.com/joeljhou/codebase-notes/releases/download/v0.1.2/codebase-notes-jetbrains-0.1.2.zip)
+- [VS Code / TRAE CN 扩展（VSIX）](https://github.com/joeljhou/codebase-notes/releases/download/v0.1.2/codebase-notes-vscode-0.1.2.vsix)
+
+历史版本和更新说明见 [GitHub Releases](https://github.com/joeljhou/codebase-notes/releases)。
+
 ## 效果预览
 
 ### IntelliJ IDEA
