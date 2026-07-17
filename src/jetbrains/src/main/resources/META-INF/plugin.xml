@@ -20,6 +20,9 @@
             <action
                 id="CodebaseNotes.EditNote"
                 class="com.codebasenotes.jetbrains.EditNoteAction"/>
+            <action
+                id="CodebaseNotes.SetNoteStyle"
+                class="com.codebasenotes.jetbrains.SetNoteStyleAction"/>
             <separator/>
             <action
                 id="CodebaseNotes.RemoveNote"

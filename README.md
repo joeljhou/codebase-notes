@@ -174,6 +174,20 @@ artifacts/codebase-notes-jetbrains-<版本号>.zip
 }
 ```
 
+`text` 是必填的备注正文，长度为 1～2000 个字符。`style` 是可选的视觉强调；在文件或目录上右键并选择“设置备注样式”，弹窗会提供以下五种选择。使用上下键切换时可在项目树中实时预览，按 Enter 保存，按 Esc 取消并恢复原样：
+
+| style | 用途 |
+|---|---|
+| `default` | 普通说明，显示为偏灰色；写入时省略该字段 |
+| `info` | 需要关注的信息，显示为蓝色 |
+| `success` | 已确认、稳定或已完成，显示为绿色 |
+| `warning` | 风险或待处理事项，显示为黄色 |
+| `danger` | 高风险、禁止修改或严重问题，显示为红色 |
+
+旧配置中的 `muted` 仍可读取并显示为灰色，但新菜单不再提供该选项。这样既保持兼容，也避免继续增加含义模糊的样式。
+
+VS Code / TRAE CN 会注册 `codebaseNotes.noteStyle.*Foreground` 主题颜色。默认值与 JetBrains 语义色一致；如需适配自定义主题，可在 `workbench.colorCustomizations` 中覆盖。
+
 `.codebase-notes.json` 是唯一事实来源。插件不会把主数据藏进 `.idea`、`.vscode` 或本机数据库。配置可以提交到 Git，下面两类运行时文件则应保持忽略：
 
 ```gitignore

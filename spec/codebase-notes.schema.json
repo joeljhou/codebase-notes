@@ -42,6 +42,7 @@
         },
         "style": {
           "type": "string",
+          "description": "Visual emphasis for the note. muted is retained for backward compatibility; new UI choices use default, info, success, warning, and danger.",
           "enum": [
             "default",
             "muted",

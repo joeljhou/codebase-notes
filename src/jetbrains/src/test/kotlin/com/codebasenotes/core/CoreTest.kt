@@ -44,6 +44,28 @@ class CoreTest {
     }
 
     @Test
+    fun `text and style edits preserve the other note fields`() {
+        val original = ConfigParser.mapper.createObjectNode().apply {
+            put("text", "old")
+            put("style", "info")
+            putObject("future").put("enabled", true)
+        }
+
+        val textEdited = noteWithText(original, "new")
+        assertEquals("new", textEdited.path("text").textValue())
+        assertEquals("info", textEdited.path("style").textValue())
+        assertTrue(textEdited.path("future").path("enabled").booleanValue())
+
+        val warning = noteWithStyle(textEdited, NoteStyle.WARNING)
+        assertEquals("warning", warning.path("style").textValue())
+        assertEquals("new", warning.path("text").textValue())
+
+        val default = noteWithStyle(warning, NoteStyle.DEFAULT)
+        assertTrue(!default.has("style"))
+        assertEquals("new", default.path("text").textValue())
+    }
+
+    @Test
     fun `failed rename keeps original bytes`() {
         val path = temporaryDirectory.resolve(CONFIG_FILE_NAME)
         val original = """{"version":1,"notes":{}}""".toByteArray()

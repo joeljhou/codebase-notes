@@ -9,6 +9,12 @@ import {
 } from "../platform/workspace-manager.js";
 import { noteIntentFromText, validateNoteText } from "./note-input.js";
 import {
+  noteIntentFromStyle,
+  resolvedNoteStyle,
+  SELECTABLE_NOTE_STYLES,
+  type SelectableNoteStyle,
+} from "./note-style.js";
+import {
   MissingNoteTreeItem,
   NoteTargetTreeItem,
 } from "./tree-provider.js";
@@ -26,6 +32,10 @@ interface ResolvedTarget {
 interface SearchPick extends vscode.QuickPickItem {
   state: WorkspaceNotesState;
   key: string;
+}
+
+interface StylePick extends vscode.QuickPickItem {
+  style: SelectableNoteStyle;
 }
 
 type RevealNote = (uri: vscode.Uri) => vscode.ProviderResult<void>;
@@ -198,6 +208,122 @@ async function editNote(
     intent,
   );
   await applyResult(manager, target.state, result);
+}
+
+async function setNoteStyle(
+  manager: NotesWorkspaceManager,
+  value: unknown,
+): Promise<void> {
+  const target = await resolveTarget(manager, value);
+  if (target === undefined || rejectDirtyConfig(target.state)) {
+    return;
+  }
+  const snapshot = target.state.snapshot;
+  if (snapshot === undefined) {
+    return;
+  }
+  const existing = snapshot.config.notes[target.key];
+  if (existing === undefined) {
+    await vscode.window.showInformationMessage(
+      vscode.l10n.t("Add a text note before setting its style."),
+    );
+    return;
+  }
+
+  const current = resolvedNoteStyle(existing);
+  const labels: Record<
+    SelectableNoteStyle,
+    { label: string; description: string }
+  > = {
+    default: {
+      label: vscode.l10n.t("Default"),
+      description: vscode.l10n.t("Normal emphasis"),
+    },
+    info: {
+      label: vscode.l10n.t("Info"),
+      description: vscode.l10n.t("Blue"),
+    },
+    success: {
+      label: vscode.l10n.t("Success"),
+      description: vscode.l10n.t("Green"),
+    },
+    warning: {
+      label: vscode.l10n.t("Warning"),
+      description: vscode.l10n.t("Yellow"),
+    },
+    danger: {
+      label: vscode.l10n.t("Danger"),
+      description: vscode.l10n.t("Red"),
+    },
+  };
+  const items: StylePick[] = SELECTABLE_NOTE_STYLES.map((style) => ({
+    label: labels[style].label,
+    description: labels[style].description,
+    style,
+  }));
+  const initialItem = items.find((item) => item.style === current) ?? items[0];
+  if (initialItem === undefined) {
+    return;
+  }
+  const quickPick = vscode.window.createQuickPick<StylePick>();
+  quickPick.title = vscode.l10n.t("Note Style · {0}", target.key);
+  quickPick.placeholder = vscode.l10n.t(
+    "Use Up and Down to preview; Enter to save; Escape to cancel",
+  );
+  quickPick.items = items;
+  quickPick.activeItems = [initialItem];
+
+  await new Promise<void>((resolve) => {
+    let saving = false;
+    let finished = false;
+    const subscriptions: vscode.Disposable[] = [];
+    const finish = (): void => {
+      if (finished) return;
+      finished = true;
+      subscriptions.forEach((subscription) => subscription.dispose());
+      quickPick.dispose();
+      resolve();
+    };
+
+    subscriptions.push(
+      quickPick.onDidChangeActive(([item]) => {
+        if (!saving && item !== undefined) {
+          manager.setNoteStylePreview(target.state, target.key, item.style);
+        }
+      }),
+      quickPick.onDidHide(() => {
+        if (!saving) {
+          manager.setNoteStylePreview(target.state, target.key, undefined);
+          finish();
+        }
+      }),
+      quickPick.onDidAccept(() => {
+        const selected = quickPick.activeItems[0];
+        if (saving || selected === undefined) return;
+        saving = true;
+        void (async () => {
+          try {
+            const result = await target.state.repository.setNote(
+              snapshot,
+              target.key,
+              noteIntentFromStyle(existing, selected.style),
+            );
+            manager.setNoteStylePreview(target.state, target.key, undefined);
+            await applyResult(manager, target.state, result);
+          } finally {
+            quickPick.hide();
+            finish();
+          }
+        })();
+      }),
+    );
+
+    const initial = quickPick.activeItems[0];
+    if (initial !== undefined) {
+      manager.setNoteStylePreview(target.state, target.key, initial.style);
+    }
+    quickPick.show();
+  });
 }
 
 async function removeNote(
@@ -399,6 +525,9 @@ export function registerCommands(
     ),
     vscode.commands.registerCommand("codebaseNotes.removeNote", (value) =>
       removeNote(manager, value),
+    ),
+    vscode.commands.registerCommand("codebaseNotes.setNoteStyle", (value) =>
+      setNoteStyle(manager, value),
     ),
     vscode.commands.registerCommand("codebaseNotes.searchNotes", () =>
       search(manager, revealNote),

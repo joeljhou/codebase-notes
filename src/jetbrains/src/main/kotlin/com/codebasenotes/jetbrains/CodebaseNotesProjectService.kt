@@ -2,11 +2,14 @@ package com.codebasenotes.jetbrains
 
 import com.codebasenotes.core.CommitResult
 import com.codebasenotes.core.CONFIG_FILE_NAME
-import com.codebasenotes.core.ConfigParser
 import com.codebasenotes.core.ConfigRepository
 import com.codebasenotes.core.ConfigSnapshot
 import com.codebasenotes.core.LoadResult
 import com.codebasenotes.core.PathPolicy
+import com.codebasenotes.core.NoteStyle
+import com.codebasenotes.core.noteStyle
+import com.codebasenotes.core.noteWithStyle
+import com.codebasenotes.core.noteWithText
 import com.fasterxml.jackson.databind.node.ObjectNode
 import com.intellij.ide.projectView.ProjectView
 import com.intellij.notification.NotificationGroupManager
@@ -25,6 +28,7 @@ import com.intellij.openapi.vfs.newvfs.events.VFileMoveEvent
 import com.intellij.openapi.vfs.newvfs.events.VFilePropertyChangeEvent
 import java.nio.file.Path
 import java.util.concurrent.CompletableFuture
+import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.Executors
 import java.util.concurrent.atomic.AtomicReference
 
@@ -34,6 +38,7 @@ class CodebaseNotesProjectService(private val project: Project) : Disposable {
     private val configPath: Path? = projectRoot?.resolve(CONFIG_FILE_NAME)
     private val repository = ConfigRepository(localizer = CodebaseNotesBundle.coreLocalizer)
     private val snapshot = AtomicReference<ConfigSnapshot?>()
+    private val stylePreviews = ConcurrentHashMap<String, NoteStyle>()
     private val executor = Executors.newSingleThreadExecutor { task ->
         Thread(task, "codebase-notes-${project.locationHash}").apply { isDaemon = true }
     }
@@ -55,15 +60,40 @@ class CodebaseNotesProjectService(private val project: Project) : Disposable {
         return snapshot.get()?.document?.notes?.get(key) as? ObjectNode
     }
 
+    fun noteStyleFor(file: VirtualFile): NoteStyle? {
+        val key = keyFor(file) ?: return null
+        val note = snapshot.get()?.document?.notes?.get(key) as? ObjectNode ?: return null
+        return stylePreviews[key] ?: noteStyle(note)
+    }
+
+    fun previewNoteStyle(key: String, style: NoteStyle?) {
+        require(PathPolicy.isValidKey(key)) { CodebaseNotesBundle.message("path.invalid", key) }
+        if (style == null) stylePreviews.remove(key) else stylePreviews[key] = style
+        refreshProjectView()
+    }
+
     fun setNote(key: String, text: String): CompletableFuture<CommitResult> = submit {
         if (isConfigDocumentDirty()) {
             return@submit CommitResult.Failed(CodebaseNotesBundle.message("config.dirty"))
         }
         require(PathPolicy.isValidKey(key)) { CodebaseNotesBundle.message("path.invalid", key) }
-        val note = ConfigParser.mapper.createObjectNode().put("text", text)
         val base = ensureWritableSnapshot()
             ?: return@submit CommitResult.Failed(CodebaseNotesBundle.message("config.createOrRead.failed"))
+        val existing = base.document.notes.get(key) as? ObjectNode
+        val note = noteWithText(existing, text)
         repository.setNote(base, key, note).also(::acceptResult)
+    }
+
+    fun setNoteStyle(key: String, style: NoteStyle): CompletableFuture<CommitResult> = submit {
+        if (isConfigDocumentDirty()) {
+            return@submit CommitResult.Failed(CodebaseNotesBundle.message("config.dirty"))
+        }
+        require(PathPolicy.isValidKey(key)) { CodebaseNotesBundle.message("path.invalid", key) }
+        val base = snapshot.get()
+            ?: return@submit CommitResult.Failed(CodebaseNotesBundle.message("config.notLoaded"))
+        val existing = base.document.notes.get(key) as? ObjectNode
+            ?: return@submit CommitResult.Failed(CodebaseNotesBundle.message("note.missing", key))
+        repository.setNote(base, key, noteWithStyle(existing, style)).also(::acceptResult)
     }
 
     fun removeNote(key: String): CompletableFuture<CommitResult> = submit {
@@ -224,6 +254,7 @@ class CodebaseNotesProjectService(private val project: Project) : Disposable {
         CompletableFuture.supplyAsync(action, executor)
 
     override fun dispose() {
+        stylePreviews.clear()
         executor.shutdownNow()
     }
 }

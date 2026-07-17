@@ -1,5 +1,6 @@
 import * as vscode from "vscode";
 import { NotesWorkspaceManager } from "../platform/workspace-manager.js";
+import { noteStyleThemeColor, resolvedNoteStyle } from "./note-style.js";
 
 export class NoteDecorationProvider
   implements vscode.FileDecorationProvider, vscode.Disposable
@@ -34,7 +35,11 @@ export class NoteDecorationProvider
       return {
         badge: "N",
         tooltip: note.text,
-        color: new vscode.ThemeColor("charts.blue"),
+        color: new vscode.ThemeColor(
+          noteStyleThemeColor(
+            this.manager.previewedNoteStyle(state, key) ?? resolvedNoteStyle(note),
+          ),
+        ),
       };
     } catch {
       return undefined;

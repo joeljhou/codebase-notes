@@ -34,6 +34,7 @@ describe("Codebase Notes Extension Host", () => {
   it("注册命令并且不在纯展示时创建配置", async () => {
     const commands = await vscode.commands.getCommands(true);
     assert.ok(commands.includes("codebaseNotes.editNote"));
+    assert.ok(commands.includes("codebaseNotes.setNoteStyle"));
     assert.ok(commands.includes("codebaseNotes.relinkPrefix"));
     assert.equal(state.kind, "missing");
 
@@ -54,7 +55,7 @@ describe("Codebase Notes Extension Host", () => {
     const written = await state.repository.setNote(
       state.snapshot,
       "src/App.ts",
-      { text: "应用入口" },
+      { text: "应用入口", style: "success" },
     );
     state.accept(written);
     api.manager.notifyStateChanged();
@@ -82,6 +83,20 @@ describe("Codebase Notes Extension Host", () => {
     );
     assert.equal(decoration.badge, "N");
     assert.equal(decoration.tooltip, "应用入口");
+    assert.equal(
+      decoration.color.id,
+      "codebaseNotes.noteStyle.successForeground",
+    );
+
+    api.manager.setNoteStylePreview(state, "src/App.ts", "danger");
+    const preview = await api.decorationProvider.provideFileDecoration(
+      vscode.Uri.file(path.join(state.folder.uri.fsPath, "src", "App.ts")),
+    );
+    assert.equal(
+      preview.color.id,
+      "codebaseNotes.noteStyle.dangerForeground",
+    );
+    api.manager.setNoteStylePreview(state, "src/App.ts", undefined);
   });
 
   it("workspace.applyEdit rename 会迁移 note key", async () => {

@@ -10,7 +10,7 @@ import {
   type ConfigSnapshot,
   type OperationResult,
 } from "../core/repository.js";
-import type { DiagnosticCode, Note } from "../core/types.js";
+import type { DiagnosticCode, Note, NoteStyle } from "../core/types.js";
 import { defaultLocalize, type Localize } from "../core/localize.js";
 
 type StateKind = "loading" | "missing" | "loaded" | "diagnostic";
@@ -127,6 +127,7 @@ export function lexicalNoteKey(
 
 export class NotesWorkspaceManager implements vscode.Disposable {
   readonly #entries = new Map<string, Entry>();
+  readonly #stylePreviews = new Map<WorkspaceNotesState, Map<string, NoteStyle>>();
   readonly #disposables: vscode.Disposable[] = [];
   readonly #onDidChangeEmitter = new vscode.EventEmitter<void>();
   readonly onDidChange = this.#onDidChangeEmitter.event;
@@ -175,6 +176,32 @@ export class NotesWorkspaceManager implements vscode.Disposable {
     this.#onDidChangeEmitter.fire();
   }
 
+  previewedNoteStyle(
+    state: WorkspaceNotesState,
+    key: string,
+  ): NoteStyle | undefined {
+    return this.#stylePreviews.get(state)?.get(key);
+  }
+
+  setNoteStylePreview(
+    state: WorkspaceNotesState,
+    key: string,
+    style: NoteStyle | undefined,
+  ): void {
+    if (style === undefined) {
+      const previews = this.#stylePreviews.get(state);
+      previews?.delete(key);
+      if (previews?.size === 0) {
+        this.#stylePreviews.delete(state);
+      }
+    } else {
+      const previews = this.#stylePreviews.get(state) ?? new Map<string, NoteStyle>();
+      previews.set(key, style);
+      this.#stylePreviews.set(state, previews);
+    }
+    this.notifyStateChanged();
+  }
+
   async refreshAll(): Promise<void> {
     await Promise.all(this.allStates().map((state) => state.refresh()));
     this.notifyStateChanged();
@@ -185,6 +212,7 @@ export class NotesWorkspaceManager implements vscode.Disposable {
       folder.disposables.forEach((disposable) => disposable.dispose());
     }
     this.#entries.clear();
+    this.#stylePreviews.clear();
     this.#disposables.forEach((disposable) => disposable.dispose());
   }
 
@@ -213,6 +241,9 @@ export class NotesWorkspaceManager implements vscode.Disposable {
   #removeFolder(folder: vscode.WorkspaceFolder): void {
     const entry = this.#entries.get(folder.uri.toString());
     entry?.disposables.forEach((disposable) => disposable.dispose());
+    if (entry !== undefined) {
+      this.#stylePreviews.delete(entry.state);
+    }
     this.#entries.delete(folder.uri.toString());
     this.notifyStateChanged();
   }

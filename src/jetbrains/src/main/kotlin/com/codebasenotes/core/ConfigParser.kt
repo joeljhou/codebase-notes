@@ -16,8 +16,6 @@ object ConfigParser {
 
     private val minSafeInteger = BigInteger.valueOf(-9_007_199_254_740_991L)
     private val maxSafeInteger = BigInteger.valueOf(9_007_199_254_740_991L)
-    private val styles = setOf("default", "muted", "info", "success", "warning", "danger")
-
     fun parse(
         bytes: ByteArray,
         localizer: CoreLocalizer = DefaultCoreLocalizer,
@@ -70,7 +68,7 @@ object ConfigParser {
             }
 
             value.get("style")?.let { style ->
-                if (!style.isTextual || style.textValue() !in styles) {
+                if (!style.isTextual || style.textValue() !in NoteStyle.configValues) {
                     return localizer.message("note.style.invalid", key)
                 }
             }
