@@ -8,7 +8,10 @@ import {
   WorkspaceNotesState,
 } from "../platform/workspace-manager.js";
 import { noteIntentFromText, validateNoteText } from "./note-input.js";
-import { NoteTreeItem } from "./tree-provider.js";
+import {
+  MissingNoteTreeItem,
+  NoteTargetTreeItem,
+} from "./tree-provider.js";
 import type { Localize } from "../core/localize.js";
 
 const localize: Localize = (message, ...args) =>
@@ -25,6 +28,8 @@ interface SearchPick extends vscode.QuickPickItem {
   key: string;
 }
 
+type RevealNote = (uri: vscode.Uri) => vscode.ProviderResult<void>;
+
 function looksLikeUri(value: unknown): value is vscode.Uri {
   return (
     typeof value === "object" &&
@@ -39,7 +44,7 @@ async function resolveTarget(
   manager: NotesWorkspaceManager,
   value: unknown,
 ): Promise<ResolvedTarget | undefined> {
-  if (value instanceof NoteTreeItem) {
+  if (value instanceof NoteTargetTreeItem) {
     return {
       state: value.state,
       key: value.noteKey,
@@ -227,7 +232,10 @@ async function removeNote(
   await applyResult(manager, target.state, result);
 }
 
-async function search(manager: NotesWorkspaceManager): Promise<void> {
+async function search(
+  manager: NotesWorkspaceManager,
+  revealNote?: RevealNote,
+): Promise<void> {
   const query = await vscode.window.showInputBox({
     title: vscode.l10n.t("Search Codebase Notes"),
     prompt: vscode.l10n.t("Search paths and note text"),
@@ -259,10 +267,12 @@ async function search(manager: NotesWorkspaceManager): Promise<void> {
     matchOnDetail: false,
   });
   if (selected !== undefined) {
-    await vscode.commands.executeCommand(
-      "revealInExplorer",
-      selected.state.uriForKey(selected.key),
-    );
+    const uri = selected.state.uriForKey(selected.key);
+    if (revealNote === undefined) {
+      await vscode.commands.executeCommand("revealInExplorer", uri);
+    } else {
+      await revealNote(uri);
+    }
   }
 }
 
@@ -286,7 +296,7 @@ async function chooseMissingPrefix(
   manager: NotesWorkspaceManager,
   value: unknown,
 ): Promise<{ state: WorkspaceNotesState; key: string } | undefined> {
-  if (value instanceof NoteTreeItem) {
+  if (value instanceof MissingNoteTreeItem) {
     return { state: value.state, key: value.noteKey };
   }
   const missing = await missingKeys(manager);
@@ -381,6 +391,7 @@ async function relink(
 
 export function registerCommands(
   manager: NotesWorkspaceManager,
+  revealNote?: RevealNote,
 ): vscode.Disposable[] {
   return [
     vscode.commands.registerCommand("codebaseNotes.editNote", (value) =>
@@ -390,7 +401,7 @@ export function registerCommands(
       removeNote(manager, value),
     ),
     vscode.commands.registerCommand("codebaseNotes.searchNotes", () =>
-      search(manager),
+      search(manager, revealNote),
     ),
     vscode.commands.registerCommand("codebaseNotes.relinkNote", (value) =>
       relink(manager, value),

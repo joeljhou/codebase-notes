@@ -9,6 +9,6 @@
   "command.relinkPrefix.title": "批量重新关联目录",
   "command.refresh.title": "刷新",
   "submenu.label": "代码备注",
-  "view.annotatedFiles.name": "已添加备注的文件",
+  "view.annotatedFiles.name": "备注资源管理器",
   "view.annotatedFiles.contextualTitle": "代码备注"
 }

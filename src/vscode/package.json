@@ -2,7 +2,7 @@
   "name": "codebase-notes-vscode",
   "displayName": "%extension.displayName%",
   "description": "%extension.description%",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "publisher": "codebase-notes",
   "private": true,
   "license": "MIT",
@@ -92,7 +92,8 @@
         {
           "id": "codebaseNotes.annotatedFiles",
           "name": "%view.annotatedFiles.name%",
-          "contextualTitle": "%view.annotatedFiles.contextualTitle%"
+          "contextualTitle": "%view.annotatedFiles.contextualTitle%",
+          "visibility": "visible"
         }
       ]
     },
@@ -107,12 +108,12 @@
       "codebaseNotes.explorerContext": [
         {
           "command": "codebaseNotes.editNote",
-          "when": "resourceScheme == file",
+          "when": "resourceScheme == file && viewItem != codebaseNotes.config && viewItem != codebaseNotes.unavailable && viewItem != codebaseNotes.missing",
           "group": "1_note@1"
         },
         {
           "command": "codebaseNotes.removeNote",
-          "when": "resourceScheme == file",
+          "when": "resourceScheme == file && (view != codebaseNotes.annotatedFiles || viewItem == codebaseNotes.entryWithNote || viewItem == codebaseNotes.rootWithNote)",
           "group": "2_clear@1"
         }
       ],
@@ -130,14 +131,9 @@
       ],
       "view/item/context": [
         {
-          "command": "codebaseNotes.editNote",
-          "when": "view == codebaseNotes.annotatedFiles && viewItem == codebaseNotes.note",
-          "group": "inline@1"
-        },
-        {
-          "command": "codebaseNotes.removeNote",
-          "when": "view == codebaseNotes.annotatedFiles && viewItem == codebaseNotes.note",
-          "group": "inline@2"
+          "submenu": "codebaseNotes.explorerContext",
+          "when": "view == codebaseNotes.annotatedFiles && (viewItem == codebaseNotes.root || viewItem == codebaseNotes.rootWithNote || viewItem == codebaseNotes.entry || viewItem == codebaseNotes.entryWithNote)",
+          "group": "navigation@1"
         },
         {
           "command": "codebaseNotes.relinkNote",

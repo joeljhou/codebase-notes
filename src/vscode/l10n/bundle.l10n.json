@@ -23,6 +23,8 @@
   "Codebase Notes path migration conflict: {0}": "Codebase Notes path migration conflict: {0}",
   "Codebase Notes path migration failed: {0}": "Codebase Notes path migration failed: {0}",
   "No configuration": "No configuration",
+  "Open": "Open",
+  "Missing Notes": "Missing Notes",
   "A note cannot contain only whitespace; clear the input to delete it": "A note cannot contain only whitespace; clear the input to delete it",
   "A note cannot exceed 2000 characters": "A note cannot exceed 2000 characters",
   "Codebase Notes could not locate the path: {0}": "Codebase Notes could not locate the path: {0}",
