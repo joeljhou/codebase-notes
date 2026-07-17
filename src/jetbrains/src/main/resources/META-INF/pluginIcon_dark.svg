@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 40 40">
+  <defs>
+    <linearGradient id="base" x1="4" y1="3" x2="36" y2="38" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#1E2447"/>
+      <stop offset="1" stop-color="#0D1122"/>
+    </linearGradient>
+    <linearGradient id="folder" x1="6" y1="13" x2="34" y2="33" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#818CF8"/>
+      <stop offset="1" stop-color="#6366F1"/>
+    </linearGradient>
+    <linearGradient id="note" x1="24" y1="23" x2="36" y2="35" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#A5F3FC"/>
+      <stop offset="1" stop-color="#22D3EE"/>
+    </linearGradient>
+  </defs>
+  <rect x="2" y="2" width="36" height="36" rx="9" fill="url(#base)" stroke="#30385E"/>
+  <path d="M8 10a3 3 0 0 1 3-3h7l3 3h10a3 3 0 0 1 3 3v15H8Z" fill="#8B5CF6"/>
+  <path d="M8 13h8l3 3h13a3 3 0 0 1 3 3v11a3 3 0 0 1-3 3H8a3 3 0 0 1-3-3V16a3 3 0 0 1 3-3Z" fill="url(#folder)"/>
+  <path d="m15 19-3.5 4L15 27m6-8 3.5 4L21 27" fill="none" stroke="#FFFFFF" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M28 23h5a3 3 0 0 1 3 3v6l-4 4h-4a3 3 0 0 1-3-3v-7a3 3 0 0 1 3-3Z" fill="url(#note)"/>
+  <path d="M32 36v-2a2 2 0 0 1 2-2h2Z" fill="#0891B2"/>
+  <path d="M28 28h5m-5 3h3" fill="none" stroke="#0E7490" stroke-width="1.5" stroke-linecap="round"/>
+</svg>
