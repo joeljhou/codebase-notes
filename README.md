@@ -10,6 +10,20 @@ Codebase Notes 给仓库里的文件和目录添加共享备注。VS Code 和 Je
 - 可安装的 VS Code VSIX 和 JetBrains ZIP；
 - 一次在日常 VS Code 与 IntelliJ IDEA 中完成的手动安装和双端联调。
 
+## 效果预览
+
+### IntelliJ IDEA
+
+Project 视图直接在文件和目录后显示备注摘要；同一套公共脚本可以完成双端构建与打包。
+
+![IntelliJ IDEA 中的 Codebase Notes 备注效果](docs/assets/idea-codebase-notes.png)
+
+### TRAE CN
+
+VS Code 扩展可以在 TRAE CN 中运行，“备注资源管理器”按项目结构展示共享备注和强调项。
+
+![TRAE CN 中的 Codebase Notes 备注资源管理器](docs/assets/trae-codebase-notes.png)
+
 ## 1. 准备环境
 
 | 工具 | 要求 | 用途 |
