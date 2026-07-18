@@ -9,10 +9,10 @@
 
 ## 下载与安装
 
-当前版本：`0.1.19`
+当前版本：`0.1.20`
 
-- [JetBrains 插件（ZIP）](https://github.com/joeljhou/codebase-notes/releases/download/v0.1.19/codebase-notes-jetbrains-0.1.19.zip)
-- [VS Code / TRAE 扩展（VSIX）](https://github.com/joeljhou/codebase-notes/releases/download/v0.1.19/codebase-notes-vscode-0.1.19.vsix)
+- [JetBrains 插件（ZIP）](https://github.com/joeljhou/codebase-notes/releases/download/v0.1.20/codebase-notes-jetbrains-0.1.20.zip)
+- [VS Code / TRAE 扩展（VSIX）](https://github.com/joeljhou/codebase-notes/releases/download/v0.1.20/codebase-notes-vscode-0.1.20.vsix)
 - [历史版本与更新说明](https://github.com/joeljhou/codebase-notes/releases)
 
 VS Code / TRAE：在扩展视图右上角菜单中选择 `Install from VSIX...`。
