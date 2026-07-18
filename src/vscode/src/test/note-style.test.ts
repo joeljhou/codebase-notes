@@ -44,7 +44,7 @@ test("每种兼容样式都有稳定且可区分的主题颜色", () => {
         ),
     ),
     [
-      "codebaseNotes.noteStyle.defaultForeground",
+      undefined,
       "disabledForeground",
       "codebaseNotes.noteStyle.infoForeground",
       "codebaseNotes.noteStyle.successForeground",

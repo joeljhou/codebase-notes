@@ -2,7 +2,6 @@
   "extension.displayName": "Codebase Notes",
   "extension.description": "Share file and directory notes with JetBrains IDEs through .codebase-notes.json.",
   "command.category": "Codebase Notes",
-  "color.noteStyle.default.description": "Default note foreground",
   "color.noteStyle.info.description": "Information note foreground",
   "color.noteStyle.success.description": "Success note foreground",
   "color.noteStyle.warning.description": "Warning note foreground",

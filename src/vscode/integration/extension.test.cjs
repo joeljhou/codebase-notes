@@ -83,15 +83,20 @@ describe("Codebase Notes Extension Host", () => {
     );
     assert.equal(decoration.badge, "N");
     assert.equal(decoration.tooltip, "应用入口");
-    assert.equal(decoration.color, undefined);
+    assert.equal(
+      decoration.color.id,
+      "codebaseNotes.noteStyle.successForeground",
+    );
 
     api.manager.setNoteStylePreview(state, "src/App.ts", "danger");
     const preview = await api.decorationProvider.provideFileDecoration(
       vscode.Uri.file(path.join(state.folder.uri.fsPath, "src", "App.ts")),
     );
-    assert.equal(preview.color, undefined);
+    assert.equal(
+      preview.color.id,
+      "codebaseNotes.noteStyle.dangerForeground",
+    );
     api.manager.setNoteStylePreview(state, "src/App.ts", undefined);
-
   });
 
   it("workspace.applyEdit rename 会迁移 note key", async () => {

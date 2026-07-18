@@ -15,7 +15,7 @@ export function resolvedNoteStyle(note: Note): NoteStyle {
   return note.style ?? "default";
 }
 
-export function noteStyleThemeColor(style: NoteStyle): string {
+export function noteStyleThemeColor(style: NoteStyle): string | undefined {
   switch (style) {
     case "muted":
       return "disabledForeground";
@@ -28,7 +28,7 @@ export function noteStyleThemeColor(style: NoteStyle): string {
     case "danger":
       return "codebaseNotes.noteStyle.dangerForeground";
     case "default":
-      return "codebaseNotes.noteStyle.defaultForeground";
+      return undefined;
   }
 }
 

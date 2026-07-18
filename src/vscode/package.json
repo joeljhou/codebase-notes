@@ -3,7 +3,7 @@
   "displayName": "%extension.displayName%",
   "description": "%extension.description%",
   "icon": "images/icon.png",
-  "version": "0.1.14",
+  "version": "0.1.15",
   "publisher": "joeljhou",
   "private": true,
   "license": "MIT",
@@ -51,21 +51,11 @@
   "contributes": {
     "colors": [
       {
-        "id": "codebaseNotes.noteStyle.defaultForeground",
-        "description": "%color.noteStyle.default.description%",
-        "defaults": {
-          "dark": "#8B8D98",
-          "light": "#6B7280",
-          "highContrast": "#B7BAC4",
-          "highContrastLight": "#4B5563"
-        }
-      },
-      {
         "id": "codebaseNotes.noteStyle.infoForeground",
         "description": "%color.noteStyle.info.description%",
         "defaults": {
-          "dark": "#60A5FA",
-          "light": "#2563EB",
+          "dark": "#7196C1",
+          "light": "#426F9F",
           "highContrast": "#75BEFF",
           "highContrastLight": "#1D4ED8"
         }
@@ -74,8 +64,8 @@
         "id": "codebaseNotes.noteStyle.successForeground",
         "description": "%color.noteStyle.success.description%",
         "defaults": {
-          "dark": "#4ADE80",
-          "light": "#15803D",
+          "dark": "#72A17D",
+          "light": "#477D51",
           "highContrast": "#70E59A",
           "highContrastLight": "#166534"
         }
@@ -84,8 +74,8 @@
         "id": "codebaseNotes.noteStyle.warningForeground",
         "description": "%color.noteStyle.warning.description%",
         "defaults": {
-          "dark": "#FBBF24",
-          "light": "#B45309",
+          "dark": "#C7A24D",
+          "light": "#936D13",
           "highContrast": "#FFD54F",
           "highContrastLight": "#92400E"
         }
@@ -94,8 +84,8 @@
         "id": "codebaseNotes.noteStyle.dangerForeground",
         "description": "%color.noteStyle.danger.description%",
         "defaults": {
-          "dark": "#F87171",
-          "light": "#DC2626",
+          "dark": "#CF7275",
+          "light": "#AF4F52",
           "highContrast": "#FF8A8A",
           "highContrastLight": "#B91C1C"
         }
