@@ -7,6 +7,12 @@
 - 备注可以随 Git 提交，团队切换编辑器也不会丢失上下文
 - 界面支持英文和简体中文
 
+## 官方链接
+
+- [GitHub 开源仓库](https://github.com/joeljhou/codebase-notes)
+- [VS Code Marketplace 插件](https://marketplace.visualstudio.com/items?itemName=joeljhou.codebase-notes-vscode)
+- [JetBrains Marketplace 插件（审核中）](https://plugins.jetbrains.com/plugin/32981-codebase-notes)
+
 ## 下载与安装
 
 当前版本：`0.1.21`
