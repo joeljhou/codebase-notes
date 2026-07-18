@@ -101,6 +101,11 @@ interface Entry {
   disposables: vscode.Disposable[];
 }
 
+export interface NoteStylePreviewChange {
+  state: WorkspaceNotesState;
+  key: string;
+}
+
 export function lexicalNoteKey(
   root: string,
   target: string,
@@ -131,6 +136,10 @@ export class NotesWorkspaceManager implements vscode.Disposable {
   readonly #disposables: vscode.Disposable[] = [];
   readonly #onDidChangeEmitter = new vscode.EventEmitter<void>();
   readonly onDidChange = this.#onDidChangeEmitter.event;
+  readonly #onDidChangeNoteStylePreviewEmitter =
+    new vscode.EventEmitter<NoteStylePreviewChange>();
+  readonly onDidChangeNoteStylePreview =
+    this.#onDidChangeNoteStylePreviewEmitter.event;
 
   constructor(
     readonly repository: ConfigRepository,
@@ -153,6 +162,7 @@ export class NotesWorkspaceManager implements vscode.Disposable {
         void this.#handleRenames(event);
       }),
       this.#onDidChangeEmitter,
+      this.#onDidChangeNoteStylePreviewEmitter,
     );
   }
 
@@ -188,6 +198,10 @@ export class NotesWorkspaceManager implements vscode.Disposable {
     key: string,
     style: NoteStyle | undefined,
   ): void {
+    const current = this.#stylePreviews.get(state)?.get(key);
+    if (current === style) {
+      return;
+    }
     if (style === undefined) {
       const previews = this.#stylePreviews.get(state);
       previews?.delete(key);
@@ -199,7 +213,7 @@ export class NotesWorkspaceManager implements vscode.Disposable {
       previews.set(key, style);
       this.#stylePreviews.set(state, previews);
     }
-    this.notifyStateChanged();
+    this.#onDidChangeNoteStylePreviewEmitter.fire({ state, key });
   }
 
   async refreshAll(): Promise<void> {

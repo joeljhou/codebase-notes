@@ -101,7 +101,22 @@ describe("Codebase Notes Extension Host", () => {
       "codebaseNotes.noteStyle.successForeground",
     );
 
+    let treeRefreshCount = 0;
+    const decorationChanges = [];
+    const treeSubscription = api.treeProvider.onDidChangeTreeData(() => {
+      treeRefreshCount += 1;
+    });
+    const decorationSubscription =
+      api.decorationProvider.onDidChangeFileDecorations((changed) => {
+        decorationChanges.push(changed);
+      });
+
     api.manager.setNoteStylePreview(state, "src/App.ts", "danger");
+    assert.equal(treeRefreshCount, 0, "样式预览不应刷新整棵资源树");
+    assert.deepEqual(
+      decorationChanges.map((changed) => changed?.toString()),
+      [app.resourceUri.toString()],
+    );
     const preview = await api.decorationProvider.provideFileDecoration(
       app.resourceUri,
     );
@@ -110,6 +125,13 @@ describe("Codebase Notes Extension Host", () => {
       "codebaseNotes.noteStyle.dangerForeground",
     );
     api.manager.setNoteStylePreview(state, "src/App.ts", undefined);
+    assert.equal(treeRefreshCount, 0, "取消样式预览不应刷新整棵资源树");
+    assert.deepEqual(
+      decorationChanges.map((changed) => changed?.toString()),
+      [app.resourceUri.toString(), app.resourceUri.toString()],
+    );
+    treeSubscription.dispose();
+    decorationSubscription.dispose();
 
     await vscode.commands.executeCommand(
       "codebaseNotes.revealInNotes",
