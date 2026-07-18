@@ -51,3 +51,20 @@ test("VS Code runtime bundles have matching keys and placeholders", () => {
     assert.deepEqual(placeholders(value as string), placeholders(key), key);
   }
 });
+
+test("note style is available wherever a text note can be edited", () => {
+  const manifest = readJson("package.json") as {
+    contributes?: {
+      menus?: Record<string, Array<{ command?: string; when?: string }>>;
+    };
+  };
+  const items = manifest.contributes?.menus?.["codebaseNotes.explorerContext"] ?? [];
+  const editNote = items.find((item) => item.command === "codebaseNotes.editNote");
+  const setNoteStyle = items.find(
+    (item) => item.command === "codebaseNotes.setNoteStyle",
+  );
+
+  assert.ok(editNote, "missing edit-note menu contribution");
+  assert.ok(setNoteStyle, "missing set-note-style menu contribution");
+  assert.equal(setNoteStyle.when, editNote.when);
+});

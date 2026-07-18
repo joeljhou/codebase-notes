@@ -216,7 +216,7 @@
         },
         {
           "command": "codebaseNotes.setNoteStyle",
-          "when": "(resourceScheme == file && view != codebaseNotes.annotatedFiles) || (resourceScheme == codebase-notes && (viewItem == codebaseNotes.entryWithNote || viewItem == codebaseNotes.rootWithNote))",
+          "when": "(resourceScheme == file || resourceScheme == codebase-notes) && viewItem != codebaseNotes.config && viewItem != codebaseNotes.unavailable && viewItem != codebaseNotes.missing",
           "group": "1_note@2"
         },
         {
