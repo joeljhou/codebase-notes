@@ -39,6 +39,7 @@ interface StylePick extends vscode.QuickPickItem {
 }
 
 type RevealNote = (uri: vscode.Uri) => vscode.ProviderResult<void>;
+type CommandTarget = () => unknown;
 
 function looksLikeUri(value: unknown): value is vscode.Uri {
   return (
@@ -53,16 +54,21 @@ function looksLikeUri(value: unknown): value is vscode.Uri {
 async function resolveTarget(
   manager: NotesWorkspaceManager,
   value: unknown,
+  commandTarget?: CommandTarget,
 ): Promise<ResolvedTarget | undefined> {
-  if (value instanceof NoteTargetTreeItem) {
+  const candidate =
+    value instanceof NoteTargetTreeItem || looksLikeUri(value)
+      ? value
+      : commandTarget?.();
+  if (candidate instanceof NoteTargetTreeItem) {
     return {
-      state: value.state,
-      key: value.noteKey,
-      uri: value.resourceUri as vscode.Uri,
+      state: candidate.state,
+      key: candidate.noteKey,
+      uri: candidate.resourceUri as vscode.Uri,
     };
   }
-  const uri = looksLikeUri(value)
-    ? value
+  const uri = looksLikeUri(candidate)
+    ? candidate
     : vscode.window.activeTextEditor?.document.uri;
   if (uri === undefined || uri.scheme !== "file") {
     return undefined;
@@ -169,8 +175,9 @@ function rejectDirtyConfig(state: WorkspaceNotesState): boolean {
 async function editNote(
   manager: NotesWorkspaceManager,
   value: unknown,
+  commandTarget?: CommandTarget,
 ): Promise<void> {
-  const target = await resolveTarget(manager, value);
+  const target = await resolveTarget(manager, value, commandTarget);
   if (target === undefined || rejectDirtyConfig(target.state)) {
     return;
   }
@@ -181,11 +188,8 @@ async function editNote(
   }
   const existing = baseSnapshot?.config.notes[target.key];
   const text = await vscode.window.showInputBox({
-    title: vscode.l10n.t("Text Note · {0}", target.key),
+    title: vscode.l10n.t("Edit Text Note"),
     value: existing?.text ?? "",
-    prompt: vscode.l10n.t(
-      "Leave the input empty and confirm to delete the note. Notes are stored in .codebase-notes.json at the workspace root.",
-    ),
     validateInput: (value) => validateNoteText(value, localize),
   });
   if (text === undefined) {
@@ -213,8 +217,9 @@ async function editNote(
 async function setNoteStyle(
   manager: NotesWorkspaceManager,
   value: unknown,
+  commandTarget?: CommandTarget,
 ): Promise<void> {
-  const target = await resolveTarget(manager, value);
+  const target = await resolveTarget(manager, value, commandTarget);
   if (target === undefined || rejectDirtyConfig(target.state)) {
     return;
   }
@@ -329,8 +334,9 @@ async function setNoteStyle(
 async function removeNote(
   manager: NotesWorkspaceManager,
   value: unknown,
+  commandTarget?: CommandTarget,
 ): Promise<void> {
-  const target = await resolveTarget(manager, value);
+  const target = await resolveTarget(manager, value, commandTarget);
   if (
     target === undefined ||
     target.state.snapshot === undefined ||
@@ -518,16 +524,17 @@ async function relink(
 export function registerCommands(
   manager: NotesWorkspaceManager,
   revealNote?: RevealNote,
+  commandTarget?: CommandTarget,
 ): vscode.Disposable[] {
   return [
     vscode.commands.registerCommand("codebaseNotes.editNote", (value) =>
-      editNote(manager, value),
+      editNote(manager, value, commandTarget),
     ),
     vscode.commands.registerCommand("codebaseNotes.removeNote", (value) =>
-      removeNote(manager, value),
+      removeNote(manager, value, commandTarget),
     ),
     vscode.commands.registerCommand("codebaseNotes.setNoteStyle", (value) =>
-      setNoteStyle(manager, value),
+      setNoteStyle(manager, value, commandTarget),
     ),
     vscode.commands.registerCommand("codebaseNotes.searchNotes", () =>
       search(manager, revealNote),

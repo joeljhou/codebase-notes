@@ -21,12 +21,12 @@ describe("Codebase Notes Extension Host", () => {
 
   before(async () => {
     extension = vscode.extensions.getExtension(
-      "codebase-notes.codebase-notes-vscode",
+      "joeljhou.codebase-notes-vscode",
     );
     assert.ok(extension, "扩展应出现在 Extension Host");
     api = await extension.activate();
     assert.ok(api.manager);
-    assert.ok(api.treeView);
+    assert.ok(api.webviewProvider);
     state = api.manager.allStates()[0];
     assert.ok(state, "测试 workspace 应有一个 state");
   });
@@ -83,20 +83,24 @@ describe("Codebase Notes Extension Host", () => {
     );
     assert.equal(decoration.badge, "N");
     assert.equal(decoration.tooltip, "应用入口");
-    assert.equal(
-      decoration.color.id,
-      "codebaseNotes.noteStyle.successForeground",
-    );
+    assert.equal(decoration.color, undefined);
 
     api.manager.setNoteStylePreview(state, "src/App.ts", "danger");
     const preview = await api.decorationProvider.provideFileDecoration(
       vscode.Uri.file(path.join(state.folder.uri.fsPath, "src", "App.ts")),
     );
-    assert.equal(
-      preview.color.id,
-      "codebaseNotes.noteStyle.dangerForeground",
-    );
+    assert.equal(preview.color, undefined);
     api.manager.setNoteStylePreview(state, "src/App.ts", undefined);
+
+    const webRoots = await api.webviewProvider.children();
+    const webEntries = await api.webviewProvider.children(webRoots[0].id);
+    const webSrc = webEntries.find((entry) => entry.label === "src");
+    assert.ok(webSrc);
+    const webFiles = await api.webviewProvider.children(webSrc.id);
+    const webApp = webFiles.find((entry) => entry.label === "App.ts");
+    assert.equal(webApp.label, "App.ts");
+    assert.equal(webApp.note, "应用入口");
+    assert.equal(webApp.style, "success");
   });
 
   it("workspace.applyEdit rename 会迁移 note key", async () => {
