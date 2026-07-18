@@ -5,10 +5,8 @@
       "text": "编辑器格式约定"
     },
     ".gitignore": {
-      "text": "生成物与临时文件忽略规则"
-    },
-    "src/vscode/.nvmrc": {
-      "text": "Node.js 22 版本锁定"
+      "text": "★  忽略规则",
+      "style": "info"
     },
     "LICENSE": {
       "text": "项目 MIT 许可证",
@@ -21,12 +19,97 @@
       "text": "★ 双端插件唯一版本源",
       "style": "warning"
     },
+    "artifacts": {
+      "text": "★ 构建物",
+      "style": "danger"
+    },
     "deploy.sh": {
       "text": "★ 双端初始化、测试、构建与打包入口",
+      "style": "success"
+    },
+    "docs": {
+      "text": "文档"
+    },
+    "docs/README.md": {
+      "text": "文档索引与维护规则"
+    },
+    "docs/platform/reports": {
+      "text": "平台评审记录"
+    },
+    "docs/platform/reports/R20260717_platform_codebase_notes_design_review.md": {
+      "text": "设计评审结论"
+    },
+    "docs/platform/specs": {
+      "text": "平台规范与方案"
+    },
+    "docs/platform/specs/S20260717_platform_codebase_notes_implementation.md": {
+      "text": "跨编辑器实现方案"
+    },
+    "docs/platform/specs/S20260717_platform_codebase_notes_integration_test_plan.md": {
+      "text": "双端集成测试计划"
+    },
+    "docs/platform/specs/S20260717_platform_codebase_notes_protocol.md": {
+      "text": "★ v1 协议权威说明",
       "style": "warning"
     },
+    "scripts": {
+      "text": "脚本"
+    },
+    "scripts/verify-all.sh": {
+      "text": "★ 双端全量验证入口",
+      "style": "warning"
+    },
+    "scripts/verify-config-contracts.mjs": {
+      "text": "Schema 与 fixture 校验"
+    },
+    "scripts/version.mjs": {
+      "text": "全局版本同步与一致性校验"
+    },
+    "spec": {
+      "text": "跨编辑器共享协议"
+    },
+    "spec/codebase-notes.schema.json": {
+      "text": "★ 配置格式唯一契约",
+      "style": "info"
+    },
+    "spec/conformance": {
+      "text": "跨语言一致性用例"
+    },
+    "spec/conformance/forward-compatibility.json": {
+      "text": "未来版本兼容用例"
+    },
+    "spec/conformance/move-directory.json": {
+      "text": "目录移动用例"
+    },
+    "spec/conformance/normalize-path.json": {
+      "text": "路径规范化用例"
+    },
+    "spec/conformance/note-text.json": {
+      "text": "备注文本边界用例"
+    },
+    "spec/conformance/parse-config.json": {
+      "text": "配置解析用例"
+    },
+    "spec/conformance/relink-prefix.json": {
+      "text": "目录重关联用例"
+    },
+    "spec/conformance/serialize-config.json": {
+      "text": "稳定序列化用例"
+    },
+    "spec/conformance/sort-keys.json": {
+      "text": "字段排序用例"
+    },
+    "spec/conformance/three-way-merge.json": {
+      "text": "三方合并用例"
+    },
+    "spec/examples": {
+      "text": "协议配置示例"
+    },
+    "spec/examples/basic.json": {
+      "text": "最小配置示例"
+    },
     "src": {
-      "text": "JetBrains 与 VS Code 源码"
+      "text": "源码"
     },
     "src/jetbrains": {
       "text": "JetBrains 插件实现"
@@ -44,7 +127,7 @@
     },
     "src/jetbrains/build.gradle.kts": {
       "text": "★ JetBrains 构建入口",
-      "style": "warning"
+      "style": "success"
     },
     "src/jetbrains/gradle.properties": {
       "text": "Gradle 运行参数"
@@ -125,6 +208,9 @@
     "src/vscode": {
       "text": "VS Code 插件实现"
     },
+    "src/vscode/.nvmrc": {
+      "text": "Node.js 22 版本锁定"
+    },
     "src/vscode/LICENSE": {
       "text": "VS Code 插件许可证",
       "style": "muted"
@@ -136,15 +222,12 @@
       "text": "VS Code 第三方声明",
       "style": "muted"
     },
-    "src/vscode/integration": {
-      "text": "VS Code 集成测试"
-    },
     "src/vscode/integration/extension.test.cjs": {
       "text": "插件加载与交互测试"
     },
-    "src/vscode/package.json": {
-      "text": "★ VS Code 插件注册清单",
-      "style": "warning"
+    "src/vscode/package-lock.json": {
+      "text": "npm 依赖版本快照",
+      "style": "muted"
     },
     "src/vscode/resources": {
       "text": "构建生成资源",
@@ -251,91 +334,6 @@
     },
     "src/vscode/tsconfig.json": {
       "text": "TypeScript 编译配置"
-    },
-    "docs": {
-      "text": "设计与维护文档"
-    },
-    "docs/README.md": {
-      "text": "文档索引与维护规则"
-    },
-    "docs/platform/reports": {
-      "text": "平台评审记录"
-    },
-    "docs/platform/reports/R20260717_platform_codebase_notes_design_review.md": {
-      "text": "设计评审结论"
-    },
-    "docs/platform/specs": {
-      "text": "平台规范与方案"
-    },
-    "docs/platform/specs/S20260717_platform_codebase_notes_implementation.md": {
-      "text": "跨编辑器实现方案"
-    },
-    "docs/platform/specs/S20260717_platform_codebase_notes_integration_test_plan.md": {
-      "text": "双端集成测试计划"
-    },
-    "docs/platform/specs/S20260717_platform_codebase_notes_protocol.md": {
-      "text": "★ v1 协议权威说明",
-      "style": "warning"
-    },
-    "src/vscode/package-lock.json": {
-      "text": "npm 依赖版本快照",
-      "style": "muted"
-    },
-    "scripts": {
-      "text": "跨平台公共工程脚本"
-    },
-    "scripts/verify-all.sh": {
-      "text": "★ 双端全量验证入口",
-      "style": "warning"
-    },
-    "scripts/verify-config-contracts.mjs": {
-      "text": "Schema 与 fixture 校验"
-    },
-    "scripts/version.mjs": {
-      "text": "全局版本同步与一致性校验"
-    },
-    "spec": {
-      "text": "跨编辑器共享协议"
-    },
-    "spec/codebase-notes.schema.json": {
-      "text": "★ 配置格式唯一契约",
-      "style": "warning"
-    },
-    "spec/conformance": {
-      "text": "跨语言一致性用例"
-    },
-    "spec/conformance/forward-compatibility.json": {
-      "text": "未来版本兼容用例"
-    },
-    "spec/conformance/move-directory.json": {
-      "text": "目录移动用例"
-    },
-    "spec/conformance/normalize-path.json": {
-      "text": "路径规范化用例"
-    },
-    "spec/conformance/note-text.json": {
-      "text": "备注文本边界用例"
-    },
-    "spec/conformance/parse-config.json": {
-      "text": "配置解析用例"
-    },
-    "spec/conformance/relink-prefix.json": {
-      "text": "目录重关联用例"
-    },
-    "spec/conformance/serialize-config.json": {
-      "text": "稳定序列化用例"
-    },
-    "spec/conformance/sort-keys.json": {
-      "text": "字段排序用例"
-    },
-    "spec/conformance/three-way-merge.json": {
-      "text": "三方合并用例"
-    },
-    "spec/examples": {
-      "text": "协议配置示例"
-    },
-    "spec/examples/basic.json": {
-      "text": "最小配置示例"
     }
   }
 }

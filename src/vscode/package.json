@@ -4,7 +4,7 @@
   "description": "%extension.description%",
   "icon": "images/icon.png",
   "version": "0.1.10",
-  "publisher": "codebase-notes",
+  "publisher": "joeljhou",
   "private": true,
   "license": "MIT",
   "engines": {
