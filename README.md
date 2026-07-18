@@ -29,9 +29,9 @@ Project 视图直接在文件和目录后显示备注摘要；同一套公共脚
 
 ### TRAE CN
 
-VS Code 扩展可以在 TRAE CN 中运行，“备注资源管理器”按项目结构展示共享备注和强调项。
+VS Code 扩展可以在 TRAE CN 中运行，“代码备注”视图按项目结构展示共享备注和强调项。
 
-![TRAE CN 中的 Codebase Notes 备注资源管理器](docs/assets/trae-codebase-notes.png)
+![TRAE CN 中的代码备注视图](docs/assets/trae-codebase-notes.png)
 
 ## 1. 准备环境
 

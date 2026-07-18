@@ -31,6 +31,14 @@ test("VS Code manifest metadata has English and Simplified Chinese translations"
     assert.ok(key !== undefined && key in english, `missing English manifest key: ${key}`);
     assert.ok(key !== undefined && key in chinese, `missing Chinese manifest key: ${key}`);
   }
+  assert.equal(
+    english["view.annotatedFiles.name"],
+    english["view.annotatedFiles.contextualTitle"],
+  );
+  assert.equal(
+    chinese["view.annotatedFiles.name"],
+    chinese["view.annotatedFiles.contextualTitle"],
+  );
 });
 
 test("VS Code runtime bundles have matching keys and placeholders", () => {

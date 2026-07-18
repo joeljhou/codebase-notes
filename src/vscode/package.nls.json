@@ -15,6 +15,6 @@
   "command.relinkPrefix.title": "Relink Directory Prefix",
   "command.refresh.title": "Refresh",
   "submenu.label": "Codebase Notes",
-  "view.annotatedFiles.name": "Notes Explorer",
+  "view.annotatedFiles.name": "Codebase Notes",
   "view.annotatedFiles.contextualTitle": "Codebase Notes"
 }
