@@ -6,9 +6,8 @@
 默认快捷键：
 
 - 编辑文字备注：`Option+R`（macOS）/ `Alt+R`（Windows）
-- 设置备注样式：`Shift+Option+R`（macOS）/ `Shift+Alt+R`（Windows）
 
-快捷键可在 IDE 的 Keymap 设置中覆盖。
+“设置备注样式”不预设快捷键，避免与 IDE 的“重新运行测试”等操作冲突。可在 Keymap 中搜索 `Codebase Notes` 后自行绑定；编辑备注快捷键也可以覆盖。
 
 界面支持英文和简体中文，并跟随 JetBrains IDE 的显示语言。
 

@@ -44,10 +44,10 @@ Project 视图直接在文件和目录后显示备注。
 - 在系统资源管理器与“代码备注”之间切换定位
 - 搜索备注或重新关联已移动的路径
 
-选中文件或目录后，也可以用默认快捷键直接操作，无需手动绑定：
+选中文件或目录后，也可以用快捷键直接操作：
 
-- 编辑文字备注：`Option+R`（macOS）/ `Alt+R`（Windows）
-- 设置备注样式：`Shift+Option+R`（macOS）/ `Shift+Alt+R`（Windows）
+- VS Code / TRAE：`Option+R` / `Alt+R` 编辑备注，`Shift+Option+R` / `Shift+Alt+R` 设置样式。
+- JetBrains：`Option+R` / `Alt+R` 编辑备注；设置样式不预设快捷键，避免与 IDE 原生操作冲突，可在 Keymap 中自行绑定。
 
 第一次保存备注时，插件会在项目根目录创建 `.codebase-notes.json`：
 

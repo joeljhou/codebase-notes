@@ -24,9 +24,7 @@
             </action>
             <action
                 id="CodebaseNotes.SetNoteStyle"
-                class="com.codebasenotes.jetbrains.SetNoteStyleAction">
-                <keyboard-shortcut keymap="$default" first-keystroke="shift alt R"/>
-            </action>
+                class="com.codebasenotes.jetbrains.SetNoteStyleAction"/>
             <separator/>
             <action
                 id="CodebaseNotes.RemoveNote"
