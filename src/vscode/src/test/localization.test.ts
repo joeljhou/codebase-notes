@@ -52,7 +52,7 @@ test("VS Code runtime bundles have matching keys and placeholders", () => {
   }
 });
 
-test("note style is available wherever a text note can be edited", () => {
+test("note actions are available on the same editable targets", () => {
   const manifest = readJson("package.json") as {
     contributes?: {
       menus?: Record<string, Array<{ command?: string; when?: string }>>;
@@ -63,10 +63,15 @@ test("note style is available wherever a text note can be edited", () => {
   const setNoteStyle = items.find(
     (item) => item.command === "codebaseNotes.setNoteStyle",
   );
+  const removeNote = items.find(
+    (item) => item.command === "codebaseNotes.removeNote",
+  );
 
   assert.ok(editNote, "missing edit-note menu contribution");
   assert.ok(setNoteStyle, "missing set-note-style menu contribution");
+  assert.ok(removeNote, "missing remove-note menu contribution");
   assert.equal(setNoteStyle.when, editNote.when);
+  assert.equal(removeNote.when, editNote.when);
 });
 
 test("note actions have cross-platform default shortcuts", () => {
