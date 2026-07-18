@@ -1,6 +1,6 @@
 {
   "extension.displayName": "代码备注",
-  "extension.description": "通过 .codebase-notes.json 与 JetBrains IDE 共享文件和目录备注。",
+  "extension.description": "为文件和目录添加可随 Git 共享的备注，并与 TRAE、JetBrains IDE 共用同一份配置。",
   "command.category": "代码备注",
   "color.noteStyle.info.description": "信息备注前景色",
   "color.noteStyle.success.description": "成功备注前景色",

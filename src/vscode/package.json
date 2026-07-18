@@ -7,12 +7,43 @@
   "publisher": "joeljhou",
   "private": true,
   "license": "MIT",
+  "pricing": "Free",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/joeljhou/codebase-notes.git",
+    "directory": "src/vscode"
+  },
+  "homepage": "https://github.com/joeljhou/codebase-notes#readme",
+  "bugs": {
+    "url": "https://github.com/joeljhou/codebase-notes/issues"
+  },
+  "markdown": "github",
+  "qna": "https://github.com/joeljhou/codebase-notes/issues",
+  "galleryBanner": {
+    "color": "#080B1A",
+    "theme": "dark"
+  },
+  "keywords": [
+    "codebase",
+    "notes",
+    "annotations",
+    "documentation",
+    "onboarding",
+    "architecture",
+    "repository",
+    "files",
+    "folders",
+    "team",
+    "jetbrains",
+    "trae"
+  ],
   "engines": {
     "node": ">=22",
     "vscode": "^1.107.0"
   },
   "categories": [
-    "Other"
+    "Other",
+    "Visualization"
   ],
   "activationEvents": [
     "onStartupFinished"
@@ -31,7 +62,9 @@
     "test:unit": "npm run compile:test && node --test \"dist/test/**/*.test.js\"",
     "prepare:integration": "node scripts/prepare-integration-workspace.mjs",
     "test:integration": "npm run compile && npm run prepare:integration && vscode-test --label integration",
-    "package": "npm run bundle && vsce package --no-dependencies --allow-missing-repository"
+    "vscode:prepublish": "npm run bundle",
+    "package": "vsce package --no-dependencies",
+    "publish:marketplace": "vsce publish --no-dependencies"
   },
   "dependencies": {
     "ajv": "8.20.0",

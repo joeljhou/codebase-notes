@@ -1,6 +1,6 @@
 {
   "extension.displayName": "Codebase Notes",
-  "extension.description": "Share file and directory notes with JetBrains IDEs through .codebase-notes.json.",
+  "extension.description": "Share Git-versioned notes on files and folders across VS Code, TRAE, and JetBrains IDEs.",
   "command.category": "Codebase Notes",
   "color.noteStyle.info.description": "Information note foreground",
   "color.noteStyle.success.description": "Success note foreground",
