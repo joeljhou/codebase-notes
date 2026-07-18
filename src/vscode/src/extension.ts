@@ -44,8 +44,11 @@ export async function activate(
   const revealUri = async (
     uri: vscode.Uri,
     select: boolean,
+    focus = false,
   ): Promise<void> => {
-    if (!treeView.visible) {
+    if (focus) {
+      await vscode.commands.executeCommand("codebaseNotes.annotatedFiles.focus");
+    } else if (!treeView.visible) {
       return;
     }
     const item = await treeProvider.itemForUri(uri);
@@ -77,8 +80,15 @@ export async function activate(
     vscode.window.registerFileDecorationProvider(decorationProvider),
     ...registerCommands(
       manager,
-      (uri) => revealUri(uri, true),
-      () => treeView.selection[0],
+      {
+        revealNote: (uri) => revealUri(uri, true),
+        revealInNotes: (uri) => revealUri(uri, true, true),
+        revealInExplorer: async (uri) => {
+          await vscode.commands.executeCommand("workbench.view.explorer");
+          await vscode.commands.executeCommand("revealInExplorer", uri);
+        },
+        commandTarget: () => treeView.selection[0],
+      },
     ),
   );
 

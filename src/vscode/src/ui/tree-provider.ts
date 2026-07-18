@@ -13,6 +13,7 @@ import {
   summarizeNote,
   type FilesExcludePatterns,
 } from "./tree-utils.js";
+import { notesViewResourceUri } from "./tree-resource-uri.js";
 
 function isDirectory(type: vscode.FileType): boolean {
   return (type & vscode.FileType.Directory) !== 0;
@@ -22,17 +23,17 @@ function entryLabel(uri: vscode.Uri): string {
   return path.basename(uri.fsPath);
 }
 
-abstract class WorkspaceNodeTreeItem extends vscode.TreeItem {
+export abstract class WorkspaceNodeTreeItem extends vscode.TreeItem {
   constructor(
     readonly state: WorkspaceNotesState,
     readonly entryKey: string,
-    readonly resourceUri: vscode.Uri,
+    readonly targetUri: vscode.Uri,
     label: string,
     collapsibleState: vscode.TreeItemCollapsibleState,
   ) {
     super(label, collapsibleState);
     this.id = `${state.folder.uri.toString()}::${entryKey}`;
-    this.resourceUri = resourceUri;
+    this.resourceUri = notesViewResourceUri(targetUri);
   }
 }
 
@@ -243,7 +244,7 @@ export class NotesExplorerProvider
     ) {
       return this.#readDirectory(
         element.state,
-        element.resourceUri,
+        element.targetUri,
         element.entryKey,
       );
     }

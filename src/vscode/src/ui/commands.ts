@@ -17,7 +17,9 @@ import {
 import {
   MissingNoteTreeItem,
   NoteTargetTreeItem,
+  WorkspaceNodeTreeItem,
 } from "./tree-provider.js";
+import { notesViewTargetUri } from "./tree-resource-uri.js";
 import type { Localize } from "../core/localize.js";
 
 const localize: Localize = (message, ...args) =>
@@ -40,6 +42,13 @@ interface StylePick extends vscode.QuickPickItem {
 
 type RevealNote = (uri: vscode.Uri) => vscode.ProviderResult<void>;
 type CommandTarget = () => unknown;
+
+interface CommandUi {
+  revealNote?: RevealNote;
+  revealInNotes?: RevealNote;
+  revealInExplorer?: RevealNote;
+  commandTarget?: CommandTarget;
+}
 
 function looksLikeUri(value: unknown): value is vscode.Uri {
   return (
@@ -64,7 +73,7 @@ async function resolveTarget(
     return {
       state: candidate.state,
       key: candidate.noteKey,
-      uri: candidate.resourceUri as vscode.Uri,
+      uri: candidate.targetUri,
     };
   }
   const uri = looksLikeUri(candidate)
@@ -88,6 +97,23 @@ async function resolveTarget(
     );
     return undefined;
   }
+}
+
+function resolveResourceUri(
+  value: unknown,
+  commandTarget?: CommandTarget,
+): vscode.Uri | undefined {
+  const candidate =
+    value instanceof WorkspaceNodeTreeItem || looksLikeUri(value)
+      ? value
+      : commandTarget?.();
+  if (candidate instanceof WorkspaceNodeTreeItem) {
+    return candidate.targetUri;
+  }
+  if (looksLikeUri(candidate)) {
+    return notesViewTargetUri(candidate) ?? candidate;
+  }
+  return vscode.window.activeTextEditor?.document.uri;
 }
 
 async function ensureSnapshot(
@@ -523,21 +549,20 @@ async function relink(
 
 export function registerCommands(
   manager: NotesWorkspaceManager,
-  revealNote?: RevealNote,
-  commandTarget?: CommandTarget,
+  ui: CommandUi = {},
 ): vscode.Disposable[] {
   return [
     vscode.commands.registerCommand("codebaseNotes.editNote", (value) =>
-      editNote(manager, value, commandTarget),
+      editNote(manager, value, ui.commandTarget),
     ),
     vscode.commands.registerCommand("codebaseNotes.removeNote", (value) =>
-      removeNote(manager, value, commandTarget),
+      removeNote(manager, value, ui.commandTarget),
     ),
     vscode.commands.registerCommand("codebaseNotes.setNoteStyle", (value) =>
-      setNoteStyle(manager, value, commandTarget),
+      setNoteStyle(manager, value, ui.commandTarget),
     ),
     vscode.commands.registerCommand("codebaseNotes.searchNotes", () =>
-      search(manager, revealNote),
+      search(manager, ui.revealNote),
     ),
     vscode.commands.registerCommand("codebaseNotes.relinkNote", (value) =>
       relink(manager, value),
@@ -547,6 +572,18 @@ export function registerCommands(
     ),
     vscode.commands.registerCommand("codebaseNotes.refresh", () =>
       manager.refreshAll(),
+    ),
+    vscode.commands.registerCommand("codebaseNotes.revealInNotes", (value) => {
+      // 从系统资源管理器进入时优先使用显式资源；命令面板则回退到活动编辑器。
+      const uri = resolveResourceUri(value);
+      return uri === undefined ? undefined : ui.revealInNotes?.(uri);
+    }),
+    vscode.commands.registerCommand(
+      "codebaseNotes.revealInExplorer",
+      (value) => {
+        const uri = resolveResourceUri(value, ui.commandTarget);
+        return uri === undefined ? undefined : ui.revealInExplorer?.(uri);
+      },
     ),
   ];
 }

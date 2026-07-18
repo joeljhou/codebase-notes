@@ -3,7 +3,7 @@
   "displayName": "%extension.displayName%",
   "description": "%extension.description%",
   "icon": "images/icon.png",
-  "version": "0.1.15",
+  "version": "0.1.16",
   "publisher": "joeljhou",
   "private": true,
   "license": "MIT",
@@ -54,8 +54,8 @@
         "id": "codebaseNotes.noteStyle.infoForeground",
         "description": "%color.noteStyle.info.description%",
         "defaults": {
-          "dark": "#7196C1",
-          "light": "#426F9F",
+          "dark": "#60A5FA",
+          "light": "#2563EB",
           "highContrast": "#75BEFF",
           "highContrastLight": "#1D4ED8"
         }
@@ -64,8 +64,8 @@
         "id": "codebaseNotes.noteStyle.successForeground",
         "description": "%color.noteStyle.success.description%",
         "defaults": {
-          "dark": "#72A17D",
-          "light": "#477D51",
+          "dark": "#4ADE80",
+          "light": "#15803D",
           "highContrast": "#70E59A",
           "highContrastLight": "#166534"
         }
@@ -74,8 +74,8 @@
         "id": "codebaseNotes.noteStyle.warningForeground",
         "description": "%color.noteStyle.warning.description%",
         "defaults": {
-          "dark": "#C7A24D",
-          "light": "#936D13",
+          "dark": "#FBBF24",
+          "light": "#B45309",
           "highContrast": "#FFD54F",
           "highContrastLight": "#92400E"
         }
@@ -84,8 +84,8 @@
         "id": "codebaseNotes.noteStyle.dangerForeground",
         "description": "%color.noteStyle.danger.description%",
         "defaults": {
-          "dark": "#CF7275",
-          "light": "#AF4F52",
+          "dark": "#F87171",
+          "light": "#DC2626",
           "highContrast": "#FF8A8A",
           "highContrastLight": "#B91C1C"
         }
@@ -126,6 +126,18 @@
         "command": "codebaseNotes.refresh",
         "title": "%command.refresh.title%",
         "category": "%command.category%"
+      },
+      {
+        "command": "codebaseNotes.revealInNotes",
+        "title": "%command.revealInNotes.title%",
+        "category": "%command.category%",
+        "icon": "$(note)"
+      },
+      {
+        "command": "codebaseNotes.revealInExplorer",
+        "title": "%command.revealInExplorer.title%",
+        "category": "%command.category%",
+        "icon": "$(files)"
       }
     ],
     "submenus": [
@@ -155,6 +167,16 @@
       ],
       "codebaseNotes.explorerContext": [
         {
+          "command": "codebaseNotes.revealInNotes",
+          "when": "view != codebaseNotes.annotatedFiles",
+          "group": "0_navigation@1"
+        },
+        {
+          "command": "codebaseNotes.revealInExplorer",
+          "when": "view == codebaseNotes.annotatedFiles",
+          "group": "0_navigation@1"
+        },
+        {
           "command": "codebaseNotes.editNote",
           "when": "resourceScheme == file && viewItem != codebaseNotes.config && viewItem != codebaseNotes.unavailable && viewItem != codebaseNotes.missing",
           "group": "1_note@1"
@@ -180,6 +202,11 @@
           "command": "codebaseNotes.refresh",
           "when": "view == codebaseNotes.annotatedFiles",
           "group": "navigation@2"
+        },
+        {
+          "command": "codebaseNotes.revealInExplorer",
+          "when": "view == codebaseNotes.annotatedFiles",
+          "group": "navigation@3"
         }
       ],
       "view/item/context": [

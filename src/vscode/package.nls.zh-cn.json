@@ -13,6 +13,8 @@
   "command.relinkNote.title": "重新关联备注",
   "command.relinkPrefix.title": "批量重新关联目录",
   "command.refresh.title": "刷新",
+  "command.revealInNotes.title": "在代码备注中显示",
+  "command.revealInExplorer.title": "在资源管理器中显示",
   "submenu.label": "代码备注",
   "view.annotatedFiles.name": "代码备注",
   "view.annotatedFiles.contextualTitle": "代码备注"

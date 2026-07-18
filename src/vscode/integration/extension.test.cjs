@@ -36,6 +36,8 @@ describe("Codebase Notes Extension Host", () => {
     assert.ok(commands.includes("codebaseNotes.editNote"));
     assert.ok(commands.includes("codebaseNotes.setNoteStyle"));
     assert.ok(commands.includes("codebaseNotes.relinkPrefix"));
+    assert.ok(commands.includes("codebaseNotes.revealInNotes"));
+    assert.ok(commands.includes("codebaseNotes.revealInExplorer"));
     assert.equal(state.kind, "missing");
 
     const roots = await api.treeProvider.getChildren();
@@ -78,8 +80,19 @@ describe("Codebase Notes Extension Host", () => {
     );
     assert.equal(resolved.description, "应用入口");
 
+    const sourceUri = vscode.Uri.file(
+      path.join(state.folder.uri.fsPath, "src", "App.ts"),
+    );
+    assert.equal(app.targetUri.toString(), sourceUri.toString());
+    assert.equal(app.resourceUri.fragment, "codebase-notes-view");
+    assert.equal(
+      await api.decorationProvider.provideFileDecoration(sourceUri),
+      undefined,
+      "系统资源管理器不应收到备注颜色",
+    );
+
     const decoration = await api.decorationProvider.provideFileDecoration(
-      vscode.Uri.file(path.join(state.folder.uri.fsPath, "src", "App.ts")),
+      app.resourceUri,
     );
     assert.equal(decoration.badge, "N");
     assert.equal(decoration.tooltip, "应用入口");
@@ -90,13 +103,26 @@ describe("Codebase Notes Extension Host", () => {
 
     api.manager.setNoteStylePreview(state, "src/App.ts", "danger");
     const preview = await api.decorationProvider.provideFileDecoration(
-      vscode.Uri.file(path.join(state.folder.uri.fsPath, "src", "App.ts")),
+      app.resourceUri,
     );
     assert.equal(
       preview.color.id,
       "codebaseNotes.noteStyle.dangerForeground",
     );
     api.manager.setNoteStylePreview(state, "src/App.ts", undefined);
+
+    await vscode.commands.executeCommand(
+      "codebaseNotes.revealInNotes",
+      sourceUri,
+    );
+    assert.equal(
+      api.treeView.selection[0]?.targetUri.toString(),
+      sourceUri.toString(),
+    );
+    await vscode.commands.executeCommand(
+      "codebaseNotes.revealInExplorer",
+      api.treeView.selection[0],
+    );
   });
 
   it("workspace.applyEdit rename 会迁移 note key", async () => {

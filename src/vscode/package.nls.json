@@ -13,6 +13,8 @@
   "command.relinkNote.title": "Relink Note",
   "command.relinkPrefix.title": "Relink Directory Prefix",
   "command.refresh.title": "Refresh",
+  "command.revealInNotes.title": "Show in Codebase Notes",
+  "command.revealInExplorer.title": "Show in Explorer",
   "submenu.label": "Codebase Notes",
   "view.annotatedFiles.name": "Codebase Notes",
   "view.annotatedFiles.contextualTitle": "Codebase Notes"

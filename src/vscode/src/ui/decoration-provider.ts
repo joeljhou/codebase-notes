@@ -1,6 +1,7 @@
 import * as vscode from "vscode";
 import { NotesWorkspaceManager } from "../platform/workspace-manager.js";
 import { noteStyleThemeColor, resolvedNoteStyle } from "./note-style.js";
+import { notesViewTargetUri } from "./tree-resource-uri.js";
 
 export class NoteDecorationProvider
   implements vscode.FileDecorationProvider, vscode.Disposable
@@ -22,12 +23,16 @@ export class NoteDecorationProvider
   async provideFileDecoration(
     uri: vscode.Uri,
   ): Promise<vscode.FileDecoration | undefined> {
-    const state = this.manager.stateForUri(uri);
+    const targetUri = notesViewTargetUri(uri);
+    if (targetUri === undefined) {
+      return undefined;
+    }
+    const state = this.manager.stateForUri(targetUri);
     if (state?.snapshot === undefined) {
       return undefined;
     }
     try {
-      const key = await state.keyForUri(uri);
+      const key = await state.keyForUri(targetUri);
       const note = state.noteForKey(key);
       if (note === undefined) {
         return undefined;
