@@ -2,6 +2,14 @@
   color-scheme: light dark;
 }
 
+@font-face {
+  font-family: "codicon";
+  font-style: normal;
+  font-weight: normal;
+  font-display: block;
+  src: url("./codicon.ttf") format("truetype");
+}
+
 * {
   box-sizing: border-box;
 }
@@ -25,7 +33,7 @@ body {
 
 .tree {
   min-width: max-content;
-  padding: 2px 0 12px;
+  padding: 0 0 10px;
   outline: none;
 }
 
@@ -34,9 +42,9 @@ body {
   display: flex;
   align-items: center;
   width: 100%;
-  height: 24px;
+  height: 22px;
   min-width: 100%;
-  padding-right: 10px;
+  padding-right: 8px;
   white-space: nowrap;
   cursor: default;
   outline: none;
@@ -49,6 +57,8 @@ body {
 .row.selected {
   color: var(--vscode-list-activeSelectionForeground);
   background: var(--vscode-list-activeSelectionBackground);
+  outline: 1px solid var(--vscode-contrastActiveBorder, transparent);
+  outline-offset: -1px;
 }
 
 body:not(.focused) .row.selected {
@@ -59,7 +69,7 @@ body:not(.focused) .row.selected {
 .twistie {
   flex: 0 0 16px;
   width: 16px;
-  height: 20px;
+  height: 22px;
   padding: 0;
   color: var(--vscode-icon-foreground);
   background: transparent;
@@ -69,10 +79,11 @@ body:not(.focused) .row.selected {
 
 .twistie::before {
   display: inline-block;
-  content: "›";
-  font-size: 18px;
-  line-height: 18px;
-  transform-origin: 50% 52%;
+  content: "\eab6";
+  font-family: "codicon";
+  font-size: 16px;
+  line-height: 22px;
+  transform-origin: 50% 50%;
   transition: transform 90ms ease-out;
 }
 
@@ -85,71 +96,43 @@ body:not(.focused) .row.selected {
 }
 
 .item-icon {
-  position: relative;
-  flex: 0 0 17px;
-  width: 17px;
-  height: 17px;
-  margin-right: 6px;
+  flex: 0 0 16px;
+  width: 16px;
+  height: 22px;
+  margin-right: 4px;
   color: var(--vscode-icon-foreground);
-  opacity: 0.9;
+  font-family: "codicon";
+  font-size: 16px;
+  font-weight: normal;
+  line-height: 22px;
+  text-align: center;
+  -webkit-font-smoothing: antialiased;
 }
 
 .item-icon.file::before {
-  position: absolute;
-  top: 2px;
-  left: 3px;
-  width: 10px;
-  height: 13px;
-  content: "";
-  border: 1.3px solid currentColor;
-  border-radius: 1px;
+  content: "\ea7b";
 }
 
-.item-icon.file::after {
-  position: absolute;
-  top: 3px;
-  right: 3px;
-  width: 4px;
-  height: 4px;
-  content: "";
-  background: var(--vscode-sideBar-background);
-  border-bottom: 1.2px solid currentColor;
-  border-left: 1.2px solid currentColor;
+.item-icon.folder::before {
+  content: "\ea83";
 }
 
-.item-icon.folder::before,
+.row.expanded > .item-icon.folder::before {
+  content: "\eaf7";
+}
+
 .item-icon.root::before {
-  position: absolute;
-  top: 5px;
-  left: 1px;
-  width: 15px;
-  height: 10px;
-  content: "";
-  border: 1.3px solid currentColor;
-  border-radius: 2px;
+  content: "\eb46";
 }
 
-.item-icon.folder::after,
-.item-icon.root::after {
-  position: absolute;
-  top: 3px;
-  left: 2px;
-  width: 7px;
-  height: 4px;
-  content: "";
-  border: 1.3px solid currentColor;
-  border-bottom: 0;
-  border-radius: 2px 2px 0 0;
+.row.expanded > .item-icon.root::before {
+  content: "\eb45";
 }
 
 .item-icon.missing::before,
 .item-icon.missing-group::before {
-  position: absolute;
-  top: 1px;
-  left: 7px;
-  content: "!";
+  content: "\ea6c";
   color: var(--vscode-problemsWarningIcon-foreground);
-  font-weight: 700;
 }
 
 .name {
@@ -167,7 +150,7 @@ body:not(.focused) .row.selected {
 .note,
 .status {
   min-width: 0;
-  margin-left: 8px;
+  margin-left: 6px;
   overflow: hidden;
   text-overflow: ellipsis;
 }
@@ -198,6 +181,11 @@ body:not(.focused) .row.selected {
 
 .note.style-danger {
   color: var(--vscode-codebaseNotes-noteStyle-dangerForeground, #f87171);
+}
+
+body.vscode-high-contrast .row.selected .note,
+body.vscode-high-contrast-light .row.selected .note {
+  color: inherit;
 }
 
 .empty {

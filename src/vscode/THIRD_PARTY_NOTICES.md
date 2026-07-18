@@ -9,6 +9,7 @@ The VS Code extension bundle includes these MIT-licensed packages:
 - fast-uri 3.1.0
 - json-schema-traverse 1.0.0
 - require-from-string 2.0.2
+- Visual Studio Code Codicons (Copyright Microsoft Corporation)
 
 Their copyright notices and license texts are available in the corresponding
 npm packages and source repositories. This product does not modify their
