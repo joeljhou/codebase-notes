@@ -1,5 +1,9 @@
 # Change Log
 
+## 0.1.21
+
+- JetBrains 恢复 `Shift+Option+R` / `Shift+Alt+R` 设置备注样式快捷键；发生冲突时由用户在 Keymap 中自行调整。
+
 ## 0.1.20
 
 - 样式实时预览改为只更新当前节点，不再刷新整棵“代码备注”资源树。
