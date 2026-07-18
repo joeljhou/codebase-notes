@@ -84,7 +84,7 @@ describe("Codebase Notes Extension Host", () => {
       path.join(state.folder.uri.fsPath, "src", "App.ts"),
     );
     assert.equal(app.targetUri.toString(), sourceUri.toString());
-    assert.equal(app.resourceUri.fragment, "codebase-notes-view");
+    assert.equal(app.resourceUri.scheme, "codebase-notes");
     assert.equal(
       await api.decorationProvider.provideFileDecoration(sourceUri),
       undefined,

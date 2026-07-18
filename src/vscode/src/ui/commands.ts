@@ -10,6 +10,7 @@ import {
 import { noteIntentFromText, validateNoteText } from "./note-input.js";
 import {
   noteIntentFromStyle,
+  noteStyleThemeColor,
   resolvedNoteStyle,
   SELECTABLE_NOTE_STYLES,
   type SelectableNoteStyle,
@@ -262,44 +263,32 @@ async function setNoteStyle(
   }
 
   const current = resolvedNoteStyle(existing);
-  const labels: Record<
-    SelectableNoteStyle,
-    { label: string; description: string }
-  > = {
-    default: {
-      label: vscode.l10n.t("Default"),
-      description: vscode.l10n.t("Normal emphasis"),
-    },
-    info: {
-      label: vscode.l10n.t("Info"),
-      description: vscode.l10n.t("Blue"),
-    },
-    success: {
-      label: vscode.l10n.t("Success"),
-      description: vscode.l10n.t("Green"),
-    },
-    warning: {
-      label: vscode.l10n.t("Warning"),
-      description: vscode.l10n.t("Yellow"),
-    },
-    danger: {
-      label: vscode.l10n.t("Danger"),
-      description: vscode.l10n.t("Red"),
-    },
+  const labels: Record<SelectableNoteStyle, string> = {
+    default: vscode.l10n.t("Default"),
+    info: vscode.l10n.t("Info"),
+    success: vscode.l10n.t("Success"),
+    warning: vscode.l10n.t("Warning"),
+    danger: vscode.l10n.t("Danger"),
   };
-  const items: StylePick[] = SELECTABLE_NOTE_STYLES.map((style) => ({
-    label: labels[style].label,
-    description: labels[style].description,
-    style,
-  }));
+  const items: StylePick[] = SELECTABLE_NOTE_STYLES.map((style) => {
+    const color = noteStyleThemeColor(style) ?? "descriptionForeground";
+    return {
+      label: labels[style],
+      iconPath: new vscode.ThemeIcon(
+        "circle-filled",
+        new vscode.ThemeColor(color),
+      ),
+      style,
+    };
+  });
   const initialItem = items.find((item) => item.style === current) ?? items[0];
   if (initialItem === undefined) {
     return;
   }
   const quickPick = vscode.window.createQuickPick<StylePick>();
-  quickPick.title = vscode.l10n.t("Note Style · {0}", target.key);
+  quickPick.title = vscode.l10n.t("Set Note Style");
   quickPick.placeholder = vscode.l10n.t(
-    "Use Up and Down to preview; Enter to save; Escape to cancel",
+    "Up/Down preview · Enter save · Esc cancel",
   );
   quickPick.items = items;
   quickPick.activeItems = [initialItem];

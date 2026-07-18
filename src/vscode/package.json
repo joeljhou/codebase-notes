@@ -3,7 +3,7 @@
   "displayName": "%extension.displayName%",
   "description": "%extension.description%",
   "icon": "images/icon.png",
-  "version": "0.1.16",
+  "version": "0.1.17",
   "publisher": "joeljhou",
   "private": true,
   "license": "MIT",
@@ -178,17 +178,17 @@
         },
         {
           "command": "codebaseNotes.editNote",
-          "when": "resourceScheme == file && viewItem != codebaseNotes.config && viewItem != codebaseNotes.unavailable && viewItem != codebaseNotes.missing",
+          "when": "(resourceScheme == file || resourceScheme == codebase-notes) && viewItem != codebaseNotes.config && viewItem != codebaseNotes.unavailable && viewItem != codebaseNotes.missing",
           "group": "1_note@1"
         },
         {
           "command": "codebaseNotes.setNoteStyle",
-          "when": "resourceScheme == file && (view != codebaseNotes.annotatedFiles || viewItem == codebaseNotes.entryWithNote || viewItem == codebaseNotes.rootWithNote)",
+          "when": "(resourceScheme == file && view != codebaseNotes.annotatedFiles) || (resourceScheme == codebase-notes && (viewItem == codebaseNotes.entryWithNote || viewItem == codebaseNotes.rootWithNote))",
           "group": "1_note@2"
         },
         {
           "command": "codebaseNotes.removeNote",
-          "when": "resourceScheme == file && (view != codebaseNotes.annotatedFiles || viewItem == codebaseNotes.entryWithNote || viewItem == codebaseNotes.rootWithNote)",
+          "when": "(resourceScheme == file && view != codebaseNotes.annotatedFiles) || (resourceScheme == codebase-notes && (viewItem == codebaseNotes.entryWithNote || viewItem == codebaseNotes.rootWithNote))",
           "group": "2_clear@1"
         }
       ],

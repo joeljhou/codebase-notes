@@ -100,6 +100,7 @@ export class WorkspaceEntryTreeItem extends NoteTargetTreeItem {
         : vscode.TreeItemCollapsibleState.None,
     );
     this.directory = directory;
+    this.iconPath = directory ? vscode.ThemeIcon.Folder : vscode.ThemeIcon.File;
     const note = state.noteForKey(noteKey);
     this.contextValue =
       note === undefined ? "codebaseNotes.entry" : "codebaseNotes.entryWithNote";
@@ -134,6 +135,7 @@ class PlainWorkspaceEntryTreeItem extends WorkspaceNodeTreeItem {
         : vscode.TreeItemCollapsibleState.None,
     );
     this.directory = directory;
+    this.iconPath = directory ? vscode.ThemeIcon.Folder : vscode.ThemeIcon.File;
     this.contextValue =
       entryKey === ".codebase-notes.json"
         ? "codebaseNotes.config"
