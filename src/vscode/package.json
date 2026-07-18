@@ -3,7 +3,7 @@
   "displayName": "%extension.displayName%",
   "description": "%extension.description%",
   "icon": "images/icon.png",
-  "version": "0.1.13",
+  "version": "0.1.14",
   "publisher": "joeljhou",
   "private": true,
   "license": "MIT",
@@ -151,7 +151,6 @@
           "id": "codebaseNotes.annotatedFiles",
           "name": "%view.annotatedFiles.name%",
           "contextualTitle": "%view.annotatedFiles.contextualTitle%",
-          "type": "webview",
           "visibility": "visible"
         }
       ]
@@ -191,6 +190,18 @@
           "command": "codebaseNotes.refresh",
           "when": "view == codebaseNotes.annotatedFiles",
           "group": "navigation@2"
+        }
+      ],
+      "view/item/context": [
+        {
+          "submenu": "codebaseNotes.explorerContext",
+          "when": "view == codebaseNotes.annotatedFiles && (viewItem == codebaseNotes.root || viewItem == codebaseNotes.rootWithNote || viewItem == codebaseNotes.entry || viewItem == codebaseNotes.entryWithNote)",
+          "group": "navigation@1"
+        },
+        {
+          "command": "codebaseNotes.relinkNote",
+          "when": "view == codebaseNotes.annotatedFiles && viewItem == codebaseNotes.missing",
+          "group": "inline@1"
         }
       ]
     }

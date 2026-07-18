@@ -26,7 +26,7 @@ describe("Codebase Notes Extension Host", () => {
     assert.ok(extension, "扩展应出现在 Extension Host");
     api = await extension.activate();
     assert.ok(api.manager);
-    assert.ok(api.webviewProvider);
+    assert.ok(api.treeView);
     state = api.manager.allStates()[0];
     assert.ok(state, "测试 workspace 应有一个 state");
   });
@@ -92,15 +92,6 @@ describe("Codebase Notes Extension Host", () => {
     assert.equal(preview.color, undefined);
     api.manager.setNoteStylePreview(state, "src/App.ts", undefined);
 
-    const webRoots = await api.webviewProvider.children();
-    const webEntries = await api.webviewProvider.children(webRoots[0].id);
-    const webSrc = webEntries.find((entry) => entry.label === "src");
-    assert.ok(webSrc);
-    const webFiles = await api.webviewProvider.children(webSrc.id);
-    const webApp = webFiles.find((entry) => entry.label === "App.ts");
-    assert.equal(webApp.label, "App.ts");
-    assert.equal(webApp.note, "应用入口");
-    assert.equal(webApp.style, "success");
   });
 
   it("workspace.applyEdit rename 会迁移 note key", async () => {

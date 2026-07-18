@@ -9,16 +9,13 @@ import { registerCommands } from "./ui/commands.js";
 import { NoteDecorationProvider } from "./ui/decoration-provider.js";
 import {
   NotesExplorerProvider,
+  type NotesTreeItem,
 } from "./ui/tree-provider.js";
-import {
-  NOTES_WEBVIEW_VIEW_ID,
-  NotesWebviewProvider,
-} from "./ui/webview-provider.js";
 
 export interface CodebaseNotesApi {
   manager: NotesWorkspaceManager;
   treeProvider: NotesExplorerProvider;
-  webviewProvider: NotesWebviewProvider;
+  treeView: vscode.TreeView<NotesTreeItem>;
   decorationProvider: NoteDecorationProvider;
 }
 
@@ -36,31 +33,44 @@ export async function activate(
   const repository = new ConfigRepository(new ConfigParser(schema, localize));
   const manager = new NotesWorkspaceManager(repository, localize);
   const treeProvider = new NotesExplorerProvider(manager);
-  const webviewProvider = new NotesWebviewProvider(
-    context.extensionUri,
-    manager,
-    treeProvider,
-  );
-  const webviewRegistration = vscode.window.registerWebviewViewProvider(
-    NOTES_WEBVIEW_VIEW_ID,
-    webviewProvider,
+  const treeView = vscode.window.createTreeView(
+    "codebaseNotes.annotatedFiles",
+    {
+      treeDataProvider: treeProvider,
+      showCollapseAll: true,
+    },
   );
   const decorationProvider = new NoteDecorationProvider(manager);
   const revealUri = async (
     uri: vscode.Uri,
     select: boolean,
   ): Promise<void> => {
-    await webviewProvider.revealUri(uri, select);
+    if (!treeView.visible) {
+      return;
+    }
+    const item = await treeProvider.itemForUri(uri);
+    if (item !== undefined) {
+      await treeView.reveal(item, {
+        select,
+        focus: false,
+        expand: false,
+      });
+    }
   };
 
   context.subscriptions.push(
     manager,
     treeProvider,
-    webviewProvider,
-    webviewRegistration,
+    treeView,
     decorationProvider,
     vscode.window.onDidChangeActiveTextEditor((editor) => {
       if (editor !== undefined) {
+        void revealUri(editor.document.uri, false);
+      }
+    }),
+    treeView.onDidChangeVisibility(({ visible }) => {
+      const editor = vscode.window.activeTextEditor;
+      if (visible && editor !== undefined) {
         void revealUri(editor.document.uri, false);
       }
     }),
@@ -68,7 +78,7 @@ export async function activate(
     ...registerCommands(
       manager,
       (uri) => revealUri(uri, true),
-      () => webviewProvider.commandTarget(),
+      () => treeView.selection[0],
     ),
   );
 
@@ -87,7 +97,7 @@ export async function activate(
     );
   }
 
-  return { manager, treeProvider, webviewProvider, decorationProvider };
+  return { manager, treeProvider, treeView, decorationProvider };
 }
 
 export function deactivate(): void {
