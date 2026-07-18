@@ -68,3 +68,26 @@ test("note style is available wherever a text note can be edited", () => {
   assert.ok(setNoteStyle, "missing set-note-style menu contribution");
   assert.equal(setNoteStyle.when, editNote.when);
 });
+
+test("note actions have cross-platform default shortcuts", () => {
+  const manifest = readJson("package.json") as {
+    contributes?: {
+      keybindings?: Array<{ command?: string; key?: string }>;
+    };
+  };
+  const shortcuts = manifest.contributes?.keybindings ?? [];
+
+  assert.deepEqual(
+    shortcuts.filter((item) => item.command?.startsWith("codebaseNotes.") === true),
+    [
+      {
+        command: "codebaseNotes.editNote",
+        key: "alt+r",
+      },
+      {
+        command: "codebaseNotes.setNoteStyle",
+        key: "shift+alt+r",
+      },
+    ],
+  );
+});

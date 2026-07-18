@@ -19,10 +19,14 @@
         <group id="CodebaseNotes.Group" popup="true">
             <action
                 id="CodebaseNotes.EditNote"
-                class="com.codebasenotes.jetbrains.EditNoteAction"/>
+                class="com.codebasenotes.jetbrains.EditNoteAction">
+                <keyboard-shortcut keymap="$default" first-keystroke="alt R"/>
+            </action>
             <action
                 id="CodebaseNotes.SetNoteStyle"
-                class="com.codebasenotes.jetbrains.SetNoteStyleAction"/>
+                class="com.codebasenotes.jetbrains.SetNoteStyleAction">
+                <keyboard-shortcut keymap="$default" first-keystroke="shift alt R"/>
+            </action>
             <separator/>
             <action
                 id="CodebaseNotes.RemoveNote"

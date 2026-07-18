@@ -3,6 +3,13 @@
 在 Project 视图里为文件或目录添加简短共享笔记，数据写入项目根目录的
 `.codebase-notes.json`。右键目标路径即可编辑或删除；重命名和移动路径时，插件会迁移对应键。
 
+默认快捷键：
+
+- 编辑文字备注：`Option+R`（macOS）/ `Alt+R`（Windows）
+- 设置备注样式：`Shift+Option+R`（macOS）/ `Shift+Alt+R`（Windows）
+
+快捷键可在 IDE 的 Keymap 设置中覆盖。
+
 界面支持英文和简体中文，并跟随 JetBrains IDE 的显示语言。
 
 ## Compatibility

@@ -3,7 +3,7 @@
   "displayName": "%extension.displayName%",
   "description": "%extension.description%",
   "icon": "images/icon.png",
-  "version": "0.1.17",
+  "version": "0.1.18",
   "publisher": "joeljhou",
   "private": true,
   "license": "MIT",
@@ -171,6 +171,16 @@
         "title": "%command.revealInExplorer.title%",
         "category": "%command.category%",
         "icon": "$(files)"
+      }
+    ],
+    "keybindings": [
+      {
+        "command": "codebaseNotes.editNote",
+        "key": "alt+r"
+      },
+      {
+        "command": "codebaseNotes.setNoteStyle",
+        "key": "shift+alt+r"
       }
     ],
     "submenus": [

@@ -1,5 +1,11 @@
 # Change Log
 
+## 0.1.18
+
+- 修复“代码备注”资源树中部分节点缺少“设置备注样式”入口的问题。
+- 完善 Marketplace 产品介绍、截图、关键词与项目链接。
+- 新增默认快捷键：编辑文字备注使用 `Option+R`（macOS）/ `Alt+R`（Windows），设置备注样式使用 `Shift+Option+R`（macOS）/ `Shift+Alt+R`（Windows）。
+
 ## 0.1.17
 
 - 恢复 VS Code 原生“代码备注”资源树，并保留原生主题、键盘操作和右键菜单。
