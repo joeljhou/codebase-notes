@@ -52,7 +52,7 @@ export class NoteDecorationProvider
         this.manager.previewedNoteStyle(state, key) ?? resolvedNoteStyle(note);
       const color = noteStyleThemeColor(style);
       return new vscode.FileDecoration(
-        "N",
+        undefined,
         note.text,
         color === undefined ? undefined : new vscode.ThemeColor(color),
       );

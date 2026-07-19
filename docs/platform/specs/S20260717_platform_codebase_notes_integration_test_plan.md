@@ -18,7 +18,7 @@
 | L0 Schema/fixtures | 输入与协议样例有效 | 否 | 从阶段 1 起 |
 | L1 core unit | parser/path/merge/move/serializer | 否 | 对应模块落地后 |
 | L2 platform integration | command、watcher、VFS、Document、dispose | 是 | 各端竖切 |
-| L3 UI smoke | 真实树、badge、tooltip、对话框 | 是 | nightly/发布 |
+| L3 UI smoke | 真实树、主题色、tooltip、对话框 | 是 | nightly/发布 |
 | L4 packaged install | 用户拿到的 ZIP/VSIX 可运行 | 是 | 发布 |
 | L5 cross-editor E2E | 两端同时操作不丢数据 | 两个 IDE | 发布 |
 
@@ -128,7 +128,7 @@ npm --prefix src/vscode run test:integration
 
 1. 激活扩展并确认 commands 注册。
 2. edit/remove service 修改 root 配置。
-3. decoration provider 返回 badge、tooltip 和 ThemeColor。
+3. decoration provider 返回 tooltip 和 ThemeColor，不显示额外 badge。
 4. Annotated Files 返回 path、description 和 missing 状态。
 5. `workspace.applyEdit` rename 后 key 迁移。
 6. 外部修改配置后 snapshot 和 tree 刷新。
@@ -188,7 +188,7 @@ cd src/jetbrains
 
 从 `src/vscode` 按 F5 打开临时 fixture。检查：
 
-- Explorer 有短 badge 和完整 tooltip。
+- Explorer 有主题色和完整 tooltip，不显示额外 badge。
 - Annotated Files 不复制整棵 Explorer。
 - Search 只匹配 path/text。
 - missing 与 Relink Prefix 预览清楚。

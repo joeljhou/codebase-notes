@@ -9,6 +9,7 @@ import { registerCommands } from "./ui/commands.js";
 import { NoteDecorationProvider } from "./ui/decoration-provider.js";
 import {
   NotesExplorerProvider,
+  WorkspaceNodeTreeItem,
   type NotesTreeItem,
 } from "./ui/tree-provider.js";
 
@@ -41,6 +42,7 @@ export async function activate(
     },
   );
   const decorationProvider = new NoteDecorationProvider(manager);
+  let programmaticRevealDepth = 0;
   const revealUri = async (
     uri: vscode.Uri,
     select: boolean,
@@ -53,11 +55,16 @@ export async function activate(
     }
     const item = await treeProvider.itemForUri(uri);
     if (item !== undefined) {
-      await treeView.reveal(item, {
-        select,
-        focus: false,
-        expand: false,
-      });
+      programmaticRevealDepth += 1;
+      try {
+        await treeView.reveal(item, {
+          select,
+          focus: false,
+          expand: false,
+        });
+      } finally {
+        programmaticRevealDepth -= 1;
+      }
     }
   };
 
@@ -68,13 +75,25 @@ export async function activate(
     decorationProvider,
     vscode.window.onDidChangeActiveTextEditor((editor) => {
       if (editor !== undefined) {
-        void revealUri(editor.document.uri, false);
+        void revealUri(editor.document.uri, true);
       }
     }),
     treeView.onDidChangeVisibility(({ visible }) => {
       const editor = vscode.window.activeTextEditor;
       if (visible && editor !== undefined) {
-        void revealUri(editor.document.uri, false);
+        void revealUri(editor.document.uri, true);
+      }
+    }),
+    treeView.onDidExpandElement(({ element }) => {
+      if (
+        programmaticRevealDepth === 0 &&
+        element instanceof WorkspaceNodeTreeItem &&
+        element.entryKey !== "."
+      ) {
+        void vscode.commands.executeCommand(
+          "revealInExplorer",
+          element.targetUri,
+        );
       }
     }),
     vscode.window.registerFileDecorationProvider(decorationProvider),
@@ -96,7 +115,7 @@ export async function activate(
     await manager.initialize();
     const editor = vscode.window.activeTextEditor;
     if (editor !== undefined) {
-      await revealUri(editor.document.uri, false);
+      await revealUri(editor.document.uri, true);
     }
   } catch (error) {
     void vscode.window.showErrorMessage(

@@ -94,7 +94,7 @@ describe("Codebase Notes Extension Host", () => {
     const decoration = await api.decorationProvider.provideFileDecoration(
       app.resourceUri,
     );
-    assert.equal(decoration.badge, "N");
+    assert.equal(decoration.badge, undefined);
     assert.equal(decoration.tooltip, "应用入口");
     assert.equal(
       decoration.color.id,
@@ -144,6 +144,33 @@ describe("Codebase Notes Extension Host", () => {
     await vscode.commands.executeCommand(
       "codebaseNotes.revealInExplorer",
       api.treeView.selection[0],
+    );
+  });
+
+  it("活动编辑器变化会在代码备注树中展开并选中文件", async () => {
+    const readmeUri = vscode.Uri.file(
+      path.join(state.folder.uri.fsPath, "README.md"),
+    );
+    const sourceUri = vscode.Uri.file(
+      path.join(state.folder.uri.fsPath, "src", "App.ts"),
+    );
+
+    await vscode.window.showTextDocument(
+      await vscode.workspace.openTextDocument(readmeUri),
+    );
+    await waitUntil(
+      () =>
+        api.treeView.selection[0]?.targetUri.toString() === readmeUri.toString(),
+      "打开 README.md 后代码备注树未自动选中",
+    );
+
+    await vscode.window.showTextDocument(
+      await vscode.workspace.openTextDocument(sourceUri),
+    );
+    await waitUntil(
+      () =>
+        api.treeView.selection[0]?.targetUri.toString() === sourceUri.toString(),
+      "打开嵌套文件后代码备注树未展开并自动选中",
     );
   });
 

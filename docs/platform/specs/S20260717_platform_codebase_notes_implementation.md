@@ -217,7 +217,7 @@ v1 不依赖未文档化的 Explorer 多选参数。
 | `ExtensionController` | activate/deactivate 与 disposable 汇总 |
 | `VscodeRootResolver` | workspace folder 与 note key |
 | `ConfigRepository` | 协议解析、锁、合并和写入 |
-| `NoteDecorationProvider` | `N` badge、tooltip、ThemeColor |
+| `NoteDecorationProvider` | tooltip、ThemeColor |
 | `AnnotatedFilesProvider` | 当前 root notes 与 missing 状态 |
 | `RenameTracker` | `onDidRenameFiles` 到 move plan |
 | `ConfigWatcher` | root 配置 create/change/delete |
