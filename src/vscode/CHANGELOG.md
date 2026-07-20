@@ -1,5 +1,10 @@
 # Change Log
 
+## 0.1.25
+
+- 完善 JetBrains Marketplace 插件介绍、使用说明、功能列表和官方链接。
+- 更新项目首页中的 VS Code 与 JetBrains Marketplace 官方入口。
+
 ## 0.1.24
 
 - JetBrains 插件移除 Kotlin 编译器生成的已弃用 `ProjectViewNodeDecorator` 兼容桥，消除 Marketplace 验证警告。
