@@ -1,10 +1,94 @@
-<idea-plugin>
+<idea-plugin url="https://github.com/joeljhou/codebase-notes">
     <id>com.codebasenotes.jetbrains</id>
     <name>Codebase Notes</name>
-    <vendor>Codebase Notes</vendor>
+    <vendor url="https://github.com/joeljhou/codebase-notes">Codebase Notes</vendor>
     <description><![CDATA[
-        Share short file and directory notes through a repository-local .codebase-notes.json file.
+        <p><b>Shared, Git-versioned notes for your codebase structure — across JetBrains IDEs, VS Code, and TRAE.</b></p>
+
+        <p>
+            Put explanations such as “why this directory exists”, “where the project core is”, and
+            “where new features plug in” directly beside files and directories in the Project view —
+            instead of losing them in chat history, personal notes, or outdated documentation.
+        </p>
+
+        <p>
+            Codebase Notes stores all notes in a repository-local <code>.codebase-notes.json</code> file.
+            Commit it to Git so teammates and users of other supported editors can share the same context.
+        </p>
+
+        <h3>What it helps with</h3>
+        <ul>
+            <li>Onboarding: mark the core order flow or the main application entry.</li>
+            <li>Architecture: identify public API boundaries and important modules.</li>
+            <li>Maintenance: explain generated files and paths that should not be edited manually.</li>
+            <li>Navigation: mark stable sources of truth and extension points.</li>
+        </ul>
+
+        <h3>Core features</h3>
+        <ul>
+            <li>Edit, style, or remove notes from the Project view context menu.</li>
+            <li>Display short notes directly beside files and directories.</li>
+            <li>Use six semantic colors to turn the project tree into a code map.</li>
+            <li>Keep note paths in sync when files or directories are renamed or moved.</li>
+            <li>Share one open JSON format with VS Code and TRAE.</li>
+            <li>English and Simplified Chinese UI that follows the IDE language.</li>
+            <li>No account, cloud service, telemetry, or proprietary database.</li>
+        </ul>
+
+        <h3>Six code-map styles</h3>
+        <ul>
+            <li><b>Core (red):</b> the project backbone — learn this first.</li>
+            <li><b>Focus (yellow):</b> easy-to-miss relationships, constraints, or details.</li>
+            <li><b>Important (blue):</b> important modules and engineering entry points.</li>
+            <li><b>Stable (green):</b> trusted sources of truth and reliable baselines.</li>
+            <li><b>Extension (purple):</b> places where new capabilities plug in.</li>
+            <li><b>Default (gray):</b> ordinary responsibility descriptions.</li>
+        </ul>
+
+        <p>
+            Colors describe code structure rather than errors or runtime status:
+            red for the backbone, yellow for details, blue for importance,
+            green for trusted baselines, and purple for extension points.
+        </p>
+
+        <h3>Getting started</h3>
+        <ol>
+            <li>Open a project in a supported JetBrains IDE.</li>
+            <li>Right-click a file or directory in the Project view.</li>
+            <li>Choose <b>Codebase Notes → Edit Text Note</b>.</li>
+            <li>Commit <code>.codebase-notes.json</code> to Git if the note should be shared.</li>
+        </ol>
+
+        <p>
+            Default shortcuts: <code>Option+R</code> on macOS or <code>Alt+R</code> on Windows/Linux
+            to edit text; <code>Shift+Option+R</code> or <code>Shift+Alt+R</code> to set a style.
+        </p>
+
+        <h3>Data and privacy</h3>
+        <ul>
+            <li>Notes stay inside the opened project.</li>
+            <li>Writes use locking, temporary files, and conflict detection to avoid silent overwrites.</li>
+            <li>The JSON format is validated by a shared schema and cross-language conformance tests.</li>
+            <li>The plugin does not collect or transmit project data.</li>
+        </ul>
+
+        <p>
+            <a href="https://github.com/joeljhou/codebase-notes">Source code and documentation</a>
+            · <a href="https://github.com/joeljhou/codebase-notes/issues">Report an issue or request a feature</a>
+            · <a href="https://github.com/joeljhou/codebase-notes/releases/latest">Latest release</a>
+        </p>
     ]]></description>
+
+    <change-notes><![CDATA[
+        <h3>0.1.24</h3>
+        <ul>
+            <li>Unified JetBrains, VS Code, and TRAE around six code-map styles: Default, Important, Focus, Core, Stable, and Extension.</li>
+            <li>Added a shared color model for identifying the project backbone, details, important modules, trusted baselines, and extension points.</li>
+            <li>Added an AI initialization guide for generating concise project notes with consistent semantics.</li>
+            <li>Removed a Kotlin-generated deprecated API compatibility bridge reported by Marketplace validation.</li>
+        </ul>
+        <p><a href="https://github.com/joeljhou/codebase-notes/releases">Full release history</a></p>
+    ]]></change-notes>
 
     <depends>com.intellij.modules.platform</depends>
     <resource-bundle>messages.CodebaseNotesBundle</resource-bundle>

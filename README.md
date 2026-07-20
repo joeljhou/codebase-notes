@@ -10,8 +10,8 @@
 ## 官方链接
 
 - [GitHub 开源仓库](https://github.com/joeljhou/codebase-notes)
-- [VS Code Marketplace 插件](https://marketplace.visualstudio.com/items?itemName=joeljhou.codebase-notes-vscode)
-- [JetBrains Marketplace 插件（审核中）](https://plugins.jetbrains.com/plugin/32981-codebase-notes)
+- [VS Code Marketplace 插件](https://marketplace.visualstudio.com/publishers/joeljhou)
+- [JetBrains Marketplace 插件](https://plugins.jetbrains.com/vendor/zhouyu)
 
 ## 下载与安装
 
