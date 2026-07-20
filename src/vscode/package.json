@@ -3,7 +3,7 @@
   "displayName": "%extension.displayName%",
   "description": "%extension.description%",
   "icon": "images/icon.png",
-  "version": "0.1.23",
+  "version": "0.1.24",
   "publisher": "joeljhou",
   "private": true,
   "license": "MIT",
@@ -84,8 +84,8 @@
   "contributes": {
     "colors": [
       {
-        "id": "codebaseNotes.noteStyle.infoForeground",
-        "description": "%color.noteStyle.info.description%",
+        "id": "codebaseNotes.noteStyle.importantForeground",
+        "description": "%color.noteStyle.important.description%",
         "defaults": {
           "dark": "#60A5FA",
           "light": "#2563EB",
@@ -94,18 +94,8 @@
         }
       },
       {
-        "id": "codebaseNotes.noteStyle.successForeground",
-        "description": "%color.noteStyle.success.description%",
-        "defaults": {
-          "dark": "#4ADE80",
-          "light": "#15803D",
-          "highContrast": "#70E59A",
-          "highContrastLight": "#166534"
-        }
-      },
-      {
-        "id": "codebaseNotes.noteStyle.warningForeground",
-        "description": "%color.noteStyle.warning.description%",
+        "id": "codebaseNotes.noteStyle.focusForeground",
+        "description": "%color.noteStyle.focus.description%",
         "defaults": {
           "dark": "#FBBF24",
           "light": "#B45309",
@@ -114,13 +104,33 @@
         }
       },
       {
-        "id": "codebaseNotes.noteStyle.dangerForeground",
-        "description": "%color.noteStyle.danger.description%",
+        "id": "codebaseNotes.noteStyle.coreForeground",
+        "description": "%color.noteStyle.core.description%",
         "defaults": {
           "dark": "#F87171",
           "light": "#DC2626",
           "highContrast": "#FF8A8A",
           "highContrastLight": "#B91C1C"
+        }
+      },
+      {
+        "id": "codebaseNotes.noteStyle.stableForeground",
+        "description": "%color.noteStyle.stable.description%",
+        "defaults": {
+          "dark": "#4ADE80",
+          "light": "#15803D",
+          "highContrast": "#70E59A",
+          "highContrastLight": "#166534"
+        }
+      },
+      {
+        "id": "codebaseNotes.noteStyle.extensionForeground",
+        "description": "%color.noteStyle.extension.description%",
+        "defaults": {
+          "dark": "#C084FC",
+          "light": "#7C3AED",
+          "highContrast": "#D8B4FE",
+          "highContrastLight": "#6D28D9"
         }
       }
     ],

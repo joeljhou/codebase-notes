@@ -10,7 +10,6 @@ import {
 import { noteIntentFromText, validateNoteText } from "./note-input.js";
 import {
   noteIntentFromStyle,
-  noteStyleThemeColor,
   resolvedNoteStyle,
   SELECTABLE_NOTE_STYLES,
   type SelectableNoteStyle,
@@ -41,14 +40,36 @@ interface StylePick extends vscode.QuickPickItem {
   style: SelectableNoteStyle;
 }
 
+type StyleQuickPickItem = StylePick | vscode.QuickPickItem;
+
 type RevealNote = (uri: vscode.Uri) => vscode.ProviderResult<void>;
 type CommandTarget = () => unknown;
 
 interface CommandUi {
+  extensionUri?: vscode.Uri;
   revealNote?: RevealNote;
   revealInNotes?: RevealNote;
   revealInExplorer?: RevealNote;
   commandTarget?: CommandTarget;
+}
+
+function isStylePick(item: StyleQuickPickItem): item is StylePick {
+  return "style" in item;
+}
+
+function styleIconPath(
+  extensionUri: vscode.Uri,
+  style: SelectableNoteStyle,
+): { light: vscode.Uri; dark: vscode.Uri } {
+  const directory = vscode.Uri.joinPath(
+    extensionUri,
+    "resources",
+    "note-styles",
+  );
+  return {
+    light: vscode.Uri.joinPath(directory, `${style}-light.svg`),
+    dark: vscode.Uri.joinPath(directory, `${style}-dark.svg`),
+  };
 }
 
 function looksLikeUri(value: unknown): value is vscode.Uri {
@@ -245,6 +266,7 @@ async function setNoteStyle(
   manager: NotesWorkspaceManager,
   value: unknown,
   commandTarget?: CommandTarget,
+  extensionUri?: vscode.Uri,
 ): Promise<void> {
   const target = await resolveTarget(manager, value, commandTarget);
   if (target === undefined || rejectDirtyConfig(target.state)) {
@@ -265,19 +287,19 @@ async function setNoteStyle(
   const current = resolvedNoteStyle(existing);
   const labels: Record<SelectableNoteStyle, string> = {
     default: vscode.l10n.t("Default"),
-    info: vscode.l10n.t("Info"),
-    success: vscode.l10n.t("Success"),
-    warning: vscode.l10n.t("Warning"),
-    danger: vscode.l10n.t("Danger"),
+    important: vscode.l10n.t("Important"),
+    focus: vscode.l10n.t("Focus"),
+    core: vscode.l10n.t("Core"),
+    stable: vscode.l10n.t("Stable"),
+    extension: vscode.l10n.t("Extension"),
   };
   const items: StylePick[] = SELECTABLE_NOTE_STYLES.map((style) => {
-    const color = noteStyleThemeColor(style) ?? "descriptionForeground";
     return {
       label: labels[style],
-      iconPath: new vscode.ThemeIcon(
-        "circle-filled",
-        new vscode.ThemeColor(color),
-      ),
+      iconPath:
+        extensionUri === undefined
+          ? new vscode.ThemeIcon("circle-filled")
+          : styleIconPath(extensionUri, style),
       style,
     };
   });
@@ -285,12 +307,16 @@ async function setNoteStyle(
   if (initialItem === undefined) {
     return;
   }
-  const quickPick = vscode.window.createQuickPick<StylePick>();
+  const quickPick = vscode.window.createQuickPick<StyleQuickPickItem>();
   quickPick.title = vscode.l10n.t("Set Note Style");
-  quickPick.placeholder = vscode.l10n.t(
-    "Up/Down preview · Enter save · Esc cancel",
-  );
-  quickPick.items = items;
+  quickPick.placeholder = vscode.l10n.t("Search styles");
+  quickPick.items = [
+    ...items,
+    {
+      label: vscode.l10n.t("Up/Down preview · Enter save · Esc cancel"),
+      kind: vscode.QuickPickItemKind.Separator,
+    },
+  ];
   quickPick.activeItems = [initialItem];
 
   await new Promise<void>((resolve) => {
@@ -307,7 +333,7 @@ async function setNoteStyle(
 
     subscriptions.push(
       quickPick.onDidChangeActive(([item]) => {
-        if (!saving && item !== undefined) {
+        if (!saving && item !== undefined && isStylePick(item)) {
           manager.setNoteStylePreview(target.state, target.key, item.style);
         }
       }),
@@ -319,7 +345,7 @@ async function setNoteStyle(
       }),
       quickPick.onDidAccept(() => {
         const selected = quickPick.activeItems[0];
-        if (saving || selected === undefined) return;
+        if (saving || selected === undefined || !isStylePick(selected)) return;
         saving = true;
         void (async () => {
           try {
@@ -339,7 +365,7 @@ async function setNoteStyle(
     );
 
     const initial = quickPick.activeItems[0];
-    if (initial !== undefined) {
+    if (initial !== undefined && isStylePick(initial)) {
       manager.setNoteStylePreview(target.state, target.key, initial.style);
     }
     quickPick.show();
@@ -548,7 +574,7 @@ export function registerCommands(
       removeNote(manager, value, ui.commandTarget),
     ),
     vscode.commands.registerCommand("codebaseNotes.setNoteStyle", (value) =>
-      setNoteStyle(manager, value, ui.commandTarget),
+      setNoteStyle(manager, value, ui.commandTarget, ui.extensionUri),
     ),
     vscode.commands.registerCommand("codebaseNotes.searchNotes", () =>
       search(manager, ui.revealNote),

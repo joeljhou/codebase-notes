@@ -7,11 +7,11 @@ export interface JsonObject {
 
 export type NoteStyle =
   | "default"
-  | "muted"
-  | "info"
-  | "success"
-  | "warning"
-  | "danger";
+  | "important"
+  | "focus"
+  | "core"
+  | "stable"
+  | "extension";
 
 export interface Note extends JsonObject {
   text: string;

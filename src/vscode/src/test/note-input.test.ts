@@ -10,12 +10,12 @@ test("文字备注留空时转换为删除意图", () => {
 test("编辑文字备注时保留 style 与未来字段", () => {
   assert.deepEqual(
     noteIntentFromText(
-      { text: "旧备注", style: "info", future: { enabled: true } },
+      { text: "旧备注", style: "important", future: { enabled: true } },
       "新备注",
     ),
     {
       text: "新备注",
-      style: "info",
+      style: "important",
       future: { enabled: true },
     },
   );

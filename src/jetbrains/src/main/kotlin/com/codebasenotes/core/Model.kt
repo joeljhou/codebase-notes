@@ -6,17 +6,16 @@ const val CONFIG_FILE_NAME = ".codebase-notes.json"
 
 enum class NoteStyle(val configValue: String) {
     DEFAULT("default"),
-    MUTED("muted"),
-    INFO("info"),
-    SUCCESS("success"),
-    WARNING("warning"),
-    DANGER("danger");
+    IMPORTANT("important"),
+    FOCUS("focus"),
+    CORE("core"),
+    STABLE("stable"),
+    EXTENSION("extension");
 
     companion object {
         val configValues: Set<String> = entries.mapTo(linkedSetOf()) { it.configValue }
 
-        // muted 只保留旧配置兼容，不再出现在新建样式菜单中。
-        val selectable: List<NoteStyle> = listOf(DEFAULT, INFO, SUCCESS, WARNING, DANGER)
+        val selectable: List<NoteStyle> = listOf(CORE, FOCUS, IMPORTANT, STABLE, EXTENSION, DEFAULT)
 
         fun fromConfigValue(value: String?): NoteStyle? = entries.find { it.configValue == value }
     }

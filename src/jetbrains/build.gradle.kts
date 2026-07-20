@@ -1,3 +1,4 @@
+import org.jetbrains.kotlin.gradle.dsl.JvmDefaultMode
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
@@ -35,6 +36,10 @@ kotlin {
     jvmToolchain(21)
     compilerOptions {
         jvmTarget.set(JvmTarget.JVM_21)
+        // ProjectViewNodeDecorator still contains a deprecated default overload for binary compatibility.
+        // Kotlin's default JVM mode emits a bridge to it in every implementation, which Marketplace flags
+        // as deprecated API usage even though only the current ProjectViewNode overload is implemented.
+        jvmDefault.set(JvmDefaultMode.NO_COMPATIBILITY)
     }
 }
 

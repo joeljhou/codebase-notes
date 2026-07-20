@@ -18,7 +18,7 @@
               "text": "emoji"
             },
             "a.ts": {
-              "style": "info",
+              "style": "important",
               "text": "A"
             }
           },
@@ -28,7 +28,7 @@
         }
       },
       "expected": {
-        "text": "{\n  \"$schema\": \"./spec/codebase-notes.schema.json\",\n  \"version\": 1,\n  \"notes\": {\n    \"a.ts\": {\n      \"text\": \"A\",\n      \"style\": \"info\"\n    },\n    \"😀\": {\n      \"text\": \"emoji\",\n      \"future\": {\n        \"a\": false,\n        \"b\": true\n      }\n    }\n  },\n  \"a\": 0,\n  \"z\": [\n    1,\n    \"x\"\n  ]\n}\n"
+        "text": "{\n  \"$schema\": \"./spec/codebase-notes.schema.json\",\n  \"version\": 1,\n  \"notes\": {\n    \"a.ts\": {\n      \"text\": \"A\",\n      \"style\": \"important\"\n    },\n    \"😀\": {\n      \"text\": \"emoji\",\n      \"future\": {\n        \"a\": false,\n        \"b\": true\n      }\n    }\n  },\n  \"a\": 0,\n  \"z\": [\n    1,\n    \"x\"\n  ]\n}\n"
       }
     }
   ]

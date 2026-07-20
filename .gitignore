@@ -24,5 +24,5 @@ artifacts/
 .codebase-notes.json.lock
 .codebase-notes.json.tmp.*
 
-# 构建时从根 Schema 生成的 VS Code 资源
-src/vscode/resources/
+# 构建时从根 Schema 生成的 VS Code 资源；样式图标是源码资产
+src/vscode/resources/codebase-notes.schema.json

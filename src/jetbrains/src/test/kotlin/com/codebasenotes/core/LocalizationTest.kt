@@ -21,6 +21,16 @@ class LocalizationTest {
             )
             assertTrue(chinese.getString(key).isNotBlank(), key)
         }
+        assertEquals("核心", chinese.getString("note.style.core"))
+        assertEquals("关注", chinese.getString("note.style.focus"))
+        assertEquals("重要", chinese.getString("note.style.important"))
+        assertEquals("稳定", chinese.getString("note.style.stable"))
+        assertEquals("扩展", chinese.getString("note.style.extension"))
+        assertEquals("普通", chinese.getString("note.style.default"))
+        assertEquals(
+            "上下键实时预览，Enter 保存，Esc 取消",
+            chinese.getString("note.style.previewHint"),
+        )
     }
 
     private fun placeholders(value: String): List<String> =

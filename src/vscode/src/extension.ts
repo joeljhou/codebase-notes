@@ -81,6 +81,7 @@ export async function activate(
     ...registerCommands(
       manager,
       {
+        extensionUri: context.extensionUri,
         revealNote: (uri) => revealUri(uri, true),
         revealInNotes: (uri) => revealUri(uri, true, true),
         revealInExplorer: async (uri) => {

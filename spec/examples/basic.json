@@ -3,11 +3,11 @@
   "notes": {
     "src/main/kotlin/com/example/App.kt": {
       "text": "应用入口，启动时只做装配",
-      "style": "info"
+      "style": "core"
     },
     "src/main/resources": {
       "text": "生产环境配置由部署系统覆盖",
-      "style": "warning"
+      "style": "focus"
     }
   }
 }

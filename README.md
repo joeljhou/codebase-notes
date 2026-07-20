@@ -3,7 +3,7 @@
 在 VS Code、TRAE 和 JetBrains IDE 中，为仓库文件与目录添加可共享、可版本控制的代码备注。
 
 - 两端读取同一份 `.codebase-notes.json`
-- 支持文件、目录、搜索、路径迁移和五种语义样式
+- 支持文件、目录、搜索、路径迁移和六种代码地图样式
 - 备注可以随 Git 提交，团队切换编辑器也不会丢失上下文
 - 界面支持英文和简体中文
 
@@ -15,10 +15,10 @@
 
 ## 下载与安装
 
-当前版本：`0.1.23`
+当前版本：`0.1.24`
 
-- [JetBrains 插件（ZIP）](https://github.com/joeljhou/codebase-notes/releases/download/v0.1.23/codebase-notes-jetbrains-0.1.23.zip)
-- [VS Code / TRAE 扩展（VSIX）](https://github.com/joeljhou/codebase-notes/releases/download/v0.1.23/codebase-notes-vscode-0.1.23.vsix)
+- [JetBrains 插件（ZIP）](https://github.com/joeljhou/codebase-notes/releases/download/v0.1.24/codebase-notes-jetbrains-0.1.24.zip)
+- [VS Code / TRAE 扩展（VSIX）](https://github.com/joeljhou/codebase-notes/releases/download/v0.1.24/codebase-notes-vscode-0.1.24.vsix)
 - [历史版本与更新说明](https://github.com/joeljhou/codebase-notes/releases)
 
 VS Code / TRAE：在扩展视图右上角菜单中选择 `Install from VSIX...`。
@@ -62,12 +62,12 @@ Project 视图直接在文件和目录后显示备注。
   "version": 1,
   "notes": {
     "src/App.ts": {
-      "text": "应用入口，只负责装配",
-      "style": "info"
+      "text": "前端主入口",
+      "style": "core"
     },
     "scripts": {
-      "text": "构建与维护脚本",
-      "style": "warning"
+      "text": "双端工程入口",
+      "style": "important"
     }
   }
 }
@@ -75,13 +75,16 @@ Project 视图直接在文件和目录后显示备注。
 
 | `style` | 用途 |
 | --- | --- |
-| `default` | 普通说明；保存时省略 `style` |
-| `info` | 值得关注的信息 |
-| `success` | 已确认、稳定或已完成 |
-| `warning` | 风险或待处理事项 |
-| `danger` | 高风险、禁止修改或严重问题 |
+| `default` | 普通：一般职责说明；保存时省略 `style` |
+| `important` | 重要（蓝色）：重要模块或工程入口 |
+| `focus` | 关注（黄色）：容易忽略的关系、约束或细节 |
+| `core` | 核心（红色）：项目主干，应该优先掌握 |
+| `stable` | 稳定（绿色）：唯一事实来源或可靠基准 |
+| `extension` | 扩展（紫色）：新增能力的接入位置 |
 
-旧配置中的 `muted` 仍可读取，但新菜单不再提供该选项。`text` 长度为 1～2000 个字符。
+颜色用于构建代码地图，不表示错误或运行状态：**红色看主干，黄色看细节，蓝色看重点，绿色找基准，紫色找扩展。** `text` 长度为 1～2000 个字符。
+
+需要让 AI 初始化项目备注时，直接把 [AI 初始化规范](docs/platform/specs/S20260720_platform_ai_initialization.md) 交给它执行。
 
 `.codebase-notes.json` 是唯一事实来源，建议提交到 Git。以下运行时文件应保持忽略：
 

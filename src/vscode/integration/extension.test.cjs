@@ -57,7 +57,7 @@ describe("Codebase Notes Extension Host", () => {
     const written = await state.repository.setNote(
       state.snapshot,
       "src/App.ts",
-      { text: "应用入口", style: "success" },
+      { text: "应用入口", style: "core" },
     );
     state.accept(written);
     api.manager.notifyStateChanged();
@@ -98,7 +98,7 @@ describe("Codebase Notes Extension Host", () => {
     assert.equal(decoration.tooltip, "应用入口");
     assert.equal(
       decoration.color.id,
-      "codebaseNotes.noteStyle.successForeground",
+      "codebaseNotes.noteStyle.coreForeground",
     );
 
     let treeRefreshCount = 0;
@@ -111,7 +111,7 @@ describe("Codebase Notes Extension Host", () => {
         decorationChanges.push(changed);
       });
 
-    api.manager.setNoteStylePreview(state, "src/App.ts", "danger");
+    api.manager.setNoteStylePreview(state, "src/App.ts", "extension");
     assert.equal(treeRefreshCount, 0, "样式预览不应刷新整棵资源树");
     assert.deepEqual(
       decorationChanges.map((changed) => changed?.toString()),
@@ -122,7 +122,7 @@ describe("Codebase Notes Extension Host", () => {
     );
     assert.equal(
       preview.color.id,
-      "codebaseNotes.noteStyle.dangerForeground",
+      "codebaseNotes.noteStyle.extensionForeground",
     );
     api.manager.setNoteStylePreview(state, "src/App.ts", undefined);
     assert.equal(treeRefreshCount, 0, "取消样式预览不应刷新整棵资源树");

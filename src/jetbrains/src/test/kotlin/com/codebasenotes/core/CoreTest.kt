@@ -15,9 +15,24 @@ class CoreTest {
     lateinit var temporaryDirectory: Path
 
     @Test
+    fun `style selector exposes the six code map meanings`() {
+        assertEquals(
+            listOf(
+                NoteStyle.CORE,
+                NoteStyle.FOCUS,
+                NoteStyle.IMPORTANT,
+                NoteStyle.STABLE,
+                NoteStyle.EXTENSION,
+                NoteStyle.DEFAULT,
+            ),
+            NoteStyle.selectable,
+        )
+    }
+
+    @Test
     fun `serializer preserves unknown fields and uses stable order`() {
         val parsed = assertIs<ParseResult.WritableV1>(ConfigParser.parse(
-            """{"z":true,"notes":{"b":{"future":1,"text":"B"},"a":{"style":"info","text":"A"}},"version":1,"a":false}"""
+            """{"z":true,"notes":{"b":{"future":1,"text":"B"},"a":{"style":"important","text":"A"}},"version":1,"a":false}"""
                 .toByteArray(),
         ))
         val text = ConfigSerializer.serialize(parsed.document).toString(Charsets.UTF_8)
@@ -28,7 +43,7 @@ class CoreTest {
   "notes": {
     "a": {
       "text": "A",
-      "style": "info"
+      "style": "important"
     },
     "b": {
       "text": "B",
@@ -47,20 +62,20 @@ class CoreTest {
     fun `text and style edits preserve the other note fields`() {
         val original = ConfigParser.mapper.createObjectNode().apply {
             put("text", "old")
-            put("style", "info")
+            put("style", "important")
             putObject("future").put("enabled", true)
         }
 
         val textEdited = noteWithText(original, "new")
         assertEquals("new", textEdited.path("text").textValue())
-        assertEquals("info", textEdited.path("style").textValue())
+        assertEquals("important", textEdited.path("style").textValue())
         assertTrue(textEdited.path("future").path("enabled").booleanValue())
 
-        val warning = noteWithStyle(textEdited, NoteStyle.WARNING)
-        assertEquals("warning", warning.path("style").textValue())
-        assertEquals("new", warning.path("text").textValue())
+        val focus = noteWithStyle(textEdited, NoteStyle.FOCUS)
+        assertEquals("focus", focus.path("style").textValue())
+        assertEquals("new", focus.path("text").textValue())
 
-        val default = noteWithStyle(warning, NoteStyle.DEFAULT)
+        val default = noteWithStyle(focus, NoteStyle.DEFAULT)
         assertTrue(!default.has("style"))
         assertEquals("new", default.path("text").textValue())
     }

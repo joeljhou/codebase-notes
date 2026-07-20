@@ -11,6 +11,25 @@
       }
     },
     {
+      "id": "parse/all-note-styles",
+      "input": {
+        "text": "{\"version\":1,\"notes\":{\"a\":{\"text\":\"A\",\"style\":\"default\"},\"b\":{\"text\":\"B\",\"style\":\"important\"},\"c\":{\"text\":\"C\",\"style\":\"focus\"},\"d\":{\"text\":\"D\",\"style\":\"core\"},\"e\":{\"text\":\"E\",\"style\":\"stable\"},\"f\":{\"text\":\"F\",\"style\":\"extension\"}}}"
+      },
+      "expected": {
+        "mode": "writable-v1"
+      }
+    },
+    {
+      "id": "parse/legacy-note-style",
+      "input": {
+        "text": "{\"version\":1,\"notes\":{\"a\":{\"text\":\"A\",\"style\":\"danger\"}}}"
+      },
+      "expected": {
+        "mode": "invalid",
+        "code": "CBN001_INVALID_CONFIG"
+      }
+    },
+    {
       "id": "parse/bom",
       "input": {
         "text": "\ufeff{\"version\":1,\"notes\":{}}"

@@ -42,14 +42,14 @@
         },
         "style": {
           "type": "string",
-          "description": "Visual emphasis for the note. muted is retained for backward compatibility; new UI choices use default, info, success, warning, and danger.",
+          "description": "Code-map emphasis: default (ordinary), important (important module or entrypoint), focus (easy-to-miss context), core (project backbone), stable (canonical baseline), or extension (extension point).",
           "enum": [
             "default",
-            "muted",
-            "info",
-            "success",
-            "warning",
-            "danger"
+            "important",
+            "focus",
+            "core",
+            "stable",
+            "extension"
           ]
         }
       },

@@ -1,7 +1,7 @@
 # Codebase Notes v1 协议规范
 
 > 状态：实现中（核心契约已落地）
-> 最后更新：2026-07-17
+> 最后更新：2026-07-20
 > 适用范围：本地文件系统上的 JetBrains 与 VS Code Desktop 适配器
 > 关联文档：[实现方案](S20260717_platform_codebase_notes_implementation.md)、[集成测试方案](S20260717_platform_codebase_notes_integration_test_plan.md)、[设计评审](../reports/R20260717_platform_codebase_notes_design_review.md)
 
@@ -41,12 +41,12 @@ v1 的约束刻意保持简单：
   "version": 1,
   "notes": {
     ".": {
-      "text": "支付域根目录",
-      "style": "info"
+      "text": "支付服务主干",
+      "style": "core"
     },
     "src/payment/PaymentService.kt": {
-      "text": "支付编排入口，不放渠道实现",
-      "style": "warning"
+      "text": "支付核心链路",
+      "style": "core"
     }
   }
 }
@@ -60,7 +60,18 @@ v1 的约束刻意保持简单：
 | `version` | 必填，v1 固定为整数 `1` |
 | `notes` | 必填，key 为规范路径，value 为 note |
 | `note.text` | 必填，1～2000 个 Unicode code point 且至少含一个非空白字符 |
-| `note.style` | 可选：`default`、`muted`、`info`、`success`、`warning`、`danger` |
+| `note.style` | 可选：`default`、`important`、`focus`、`core`、`stable`、`extension` |
+
+`style` 是代码地图语义，不表示错误、警告或运行状态：
+
+| 值 | 颜色 | 心智 |
+| --- | --- | --- |
+| `default` | 灰色 | 普通职责说明 |
+| `important` | 蓝色 | 重要模块或工程入口 |
+| `focus` | 黄色 | 容易忽略的关系、约束或细节 |
+| `core` | 红色 | 项目主干，应该优先掌握 |
+| `stable` | 绿色 | 唯一事实来源或可靠基准 |
+| `extension` | 紫色 | 新增能力的接入位置 |
 
 `tags` 不属于 v1 公共模型。v1 搜索只消费 path 和 text；需要标签时再通过小版本正式加入。
 

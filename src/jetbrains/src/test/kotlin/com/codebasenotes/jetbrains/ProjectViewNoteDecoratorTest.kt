@@ -2,12 +2,25 @@ package com.codebasenotes.jetbrains
 
 import com.codebasenotes.core.NoteStyle
 import com.intellij.ide.projectView.PresentationData
+import com.intellij.ide.projectView.ProjectViewNode
 import com.intellij.ui.SimpleTextAttributes
 import org.junit.jupiter.api.Test
 import java.awt.Color
 import kotlin.test.assertEquals
 
 class ProjectViewNoteDecoratorTest {
+    @Test
+    fun `decorator bytecode does not contain the deprecated compatibility overload`() {
+        val decorateMethods = ProjectViewNoteDecorator::class.java.declaredMethods
+            .filter { it.name == "decorate" }
+
+        assertEquals(1, decorateMethods.size)
+        assertEquals(
+            listOf(ProjectViewNode::class.java, PresentationData::class.java),
+            decorateMethods.single().parameterTypes.toList(),
+        )
+    }
+
     @Test
     fun `default note uses IntelliJ secondary text gray`() {
         assertEquals(
@@ -17,11 +30,24 @@ class ProjectViewNoteDecoratorTest {
     }
 
     @Test
+    fun `all code map styles use distinct colors`() {
+        val styles = listOf(
+            NoteStyle.IMPORTANT,
+            NoteStyle.FOCUS,
+            NoteStyle.CORE,
+            NoteStyle.STABLE,
+            NoteStyle.EXTENSION,
+        )
+
+        assertEquals(styles.size, styles.map { noteStyleAttributes(it).fgColor }.toSet().size)
+    }
+
+    @Test
     fun `note keeps the original file name and its color`() {
         val data = PresentationData().apply { presentableText = "deploy.sh" }
         val fileColor = Color(0x3B82F6)
 
-        appendNotePresentation(data, "fallback", fileColor, "双端打包入口", NoteStyle.INFO)
+        appendNotePresentation(data, "fallback", fileColor, "双端打包入口", NoteStyle.IMPORTANT)
 
         assertEquals(listOf("deploy.sh", "  双端打包入口"), data.coloredText.map { it.text })
         assertEquals(fileColor, data.coloredText.first().attributes.fgColor)
@@ -33,7 +59,7 @@ class ProjectViewNoteDecoratorTest {
             addText("src", com.intellij.ui.SimpleTextAttributes.REGULAR_ATTRIBUTES)
         }
 
-        appendNotePresentation(data, "src", null, "源码", NoteStyle.SUCCESS)
+        appendNotePresentation(data, "src", null, "源码", NoteStyle.STABLE)
 
         assertEquals(listOf("src", "  源码"), data.coloredText.map { it.text })
     }

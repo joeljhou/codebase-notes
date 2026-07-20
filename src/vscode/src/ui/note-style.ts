@@ -1,12 +1,12 @@
 import type { Note, NoteStyle } from "../core/types.js";
 
-// muted 继续兼容旧配置，但不再作为新建选项；核心样式保持明确的状态语义。
 export const SELECTABLE_NOTE_STYLES = [
+  "core",
+  "focus",
+  "important",
+  "stable",
+  "extension",
   "default",
-  "info",
-  "success",
-  "warning",
-  "danger",
 ] as const satisfies readonly NoteStyle[];
 
 export type SelectableNoteStyle = (typeof SELECTABLE_NOTE_STYLES)[number];
@@ -17,16 +17,16 @@ export function resolvedNoteStyle(note: Note): NoteStyle {
 
 export function noteStyleThemeColor(style: NoteStyle): string | undefined {
   switch (style) {
-    case "muted":
-      return "disabledForeground";
-    case "info":
-      return "codebaseNotes.noteStyle.infoForeground";
-    case "success":
-      return "codebaseNotes.noteStyle.successForeground";
-    case "warning":
-      return "codebaseNotes.noteStyle.warningForeground";
-    case "danger":
-      return "codebaseNotes.noteStyle.dangerForeground";
+    case "important":
+      return "codebaseNotes.noteStyle.importantForeground";
+    case "focus":
+      return "codebaseNotes.noteStyle.focusForeground";
+    case "core":
+      return "codebaseNotes.noteStyle.coreForeground";
+    case "stable":
+      return "codebaseNotes.noteStyle.stableForeground";
+    case "extension":
+      return "codebaseNotes.noteStyle.extensionForeground";
     case "default":
       return undefined;
   }

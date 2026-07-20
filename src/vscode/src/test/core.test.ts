@@ -20,7 +20,7 @@ test("稳定序列化会保留未知字段并规范字段顺序", () => {
   const config = {
     z: { b: true, a: -0 },
     notes: {
-      "中.ts": { future: { z: 2, a: 1 }, style: "info", text: "中文" },
+      "中.ts": { future: { z: 2, a: 1 }, style: "important", text: "中文" },
       "a.ts": { text: "A" },
     },
     version: 1,
@@ -40,7 +40,7 @@ test("稳定序列化会保留未知字段并规范字段顺序", () => {
       "    },",
       '    "中.ts": {',
       '      "text": "中文",',
-      '      "style": "info",',
+      '      "style": "important",',
       '      "future": {',
       '        "a": 1,',
       '        "z": 2',
