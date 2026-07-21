@@ -14,6 +14,37 @@ version = providers.fileContents(layout.projectDirectory.file("../../VERSION"))
     .map { it.trim() }
     .get()
 
+fun String.escapeMarketplaceHtml(): String =
+    replace("&", "&amp;")
+        .replace("<", "&lt;")
+        .replace(">", "&gt;")
+        .replace("\"", "&quot;")
+
+fun renderMarketplaceChangeNotes(markdown: String, releaseVersion: String): String {
+    val lines = markdown.lineSequence().toList()
+    val heading = "## $releaseVersion"
+    val start = lines.indexOf(heading)
+    require(start >= 0) { "Missing $heading in src/vscode/CHANGELOG.md" }
+    val items = lines.drop(start + 1)
+        .takeWhile { !it.startsWith("## ") }
+        .mapNotNull { line -> line.removePrefix("- ").takeIf { it != line } }
+    require(items.isNotEmpty()) { "Missing release notes below $heading" }
+
+    return buildString {
+        append("<h3>").append(releaseVersion.escapeMarketplaceHtml()).appendLine("</h3>")
+        appendLine("<ul>")
+        items.forEach { append("    <li>").append(it.escapeMarketplaceHtml()).appendLine("</li>") }
+        appendLine("</ul>")
+        append("<p><a href=\"https://github.com/joeljhou/codebase-notes/releases\">")
+        append("Full release history</a></p>")
+    }
+}
+
+val marketplaceChangeNotes = renderMarketplaceChangeNotes(
+    providers.fileContents(layout.projectDirectory.file("../vscode/CHANGELOG.md")).asText.get(),
+    version.toString(),
+)
+
 repositories {
     mavenCentral()
     intellijPlatform {
@@ -58,6 +89,7 @@ tasks.processResources {
 
 intellijPlatform {
     pluginConfiguration {
+        changeNotes = marketplaceChangeNotes
         ideaVersion {
             sinceBuild = "253"
         }
