@@ -17,34 +17,40 @@ import javax.swing.JList
 class EditNoteAction : AnAction() {
     override fun actionPerformed(event: AnActionEvent) {
         val project = event.project ?: return
-        val file = event.getData(CommonDataKeys.VIRTUAL_FILE) ?: return
+        val target = event.noteTarget() ?: return
+        val file = target.file
         val service = project.service<CodebaseNotesProjectService>()
-        val key = service.keyFor(file) ?: return
-        val existing = service.noteFor(file)?.path("text")?.textValue().orEmpty()
+        val key = target.key
+        val existingNote = service.noteFor(file)
+        val existingText = existingNote?.path("text")?.textValue().orEmpty()
         val text = Messages.showInputDialog(
             project,
             CodebaseNotesBundle.message("note.edit.prompt"),
             CodebaseNotesBundle.message("note.edit.title"),
             Messages.getQuestionIcon(),
-            existing,
+            existingText,
             null,
-        ) ?: return
-        if (text.isBlank() || text.codePointCount(0, text.length) > 2000) {
-            Messages.showErrorDialog(
+        )
+        when (val intent = noteEditIntent(existingNote != null, text)) {
+            NoteEditIntent.NoOp -> Unit
+            NoteEditIntent.Remove -> service.removeNote(key).thenAccept(service::showResult)
+            is NoteEditIntent.Set -> service.setNote(key, intent.text).thenAccept(service::showResult)
+            is NoteEditIntent.Invalid -> Messages.showErrorDialog(
                 project,
-                CodebaseNotesBundle.message("note.validation.invalid"),
+                CodebaseNotesBundle.message(
+                    when (intent.reason) {
+                        NoteValidationFailure.WHITESPACE_ONLY -> "note.validation.whitespaceOnly"
+                        NoteValidationFailure.TOO_LONG -> "note.validation.tooLong"
+                    },
+                ),
                 CodebaseNotesBundle.message("plugin.title"),
             )
-            return
         }
-        service.setNote(key, text).thenAccept(service::showResult)
     }
 
     override fun update(event: AnActionEvent) {
         val project = event.project
-        val file = event.getData(CommonDataKeys.VIRTUAL_FILE)
-        event.presentation.isEnabledAndVisible = project != null && file != null &&
-            project.service<CodebaseNotesProjectService>().keyFor(file) != null
+        event.presentation.isEnabledAndVisible = project != null && event.noteTarget() != null
     }
 
     override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.BGT
@@ -53,9 +59,10 @@ class EditNoteAction : AnAction() {
 class SetNoteStyleAction : AnAction() {
     override fun actionPerformed(event: AnActionEvent) {
         val project = event.project ?: return
-        val file = event.getData(CommonDataKeys.VIRTUAL_FILE) ?: return
+        val target = event.noteTarget() ?: return
+        val file = target.file
         val service = project.service<CodebaseNotesProjectService>()
-        val key = service.keyFor(file) ?: return
+        val key = target.key
         val current = service.noteStyleFor(file) ?: return
         val chosen = AtomicBoolean(false)
         val renderer = object : ColoredListCellRenderer<NoteStyle>() {
@@ -102,9 +109,9 @@ class SetNoteStyleAction : AnAction() {
 
     override fun update(event: AnActionEvent) {
         val project = event.project
-        val file = event.getData(CommonDataKeys.VIRTUAL_FILE)
-        event.presentation.isEnabledAndVisible = project != null && file != null &&
-            project.service<CodebaseNotesProjectService>().noteFor(file) != null
+        val target = event.noteTarget()
+        event.presentation.isEnabledAndVisible = project != null && target != null &&
+            project.service<CodebaseNotesProjectService>().noteFor(target.file) != null
     }
 
     override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.BGT
@@ -113,9 +120,9 @@ class SetNoteStyleAction : AnAction() {
 class RemoveNoteAction : AnAction() {
     override fun actionPerformed(event: AnActionEvent) {
         val project = event.project ?: return
-        val file = event.getData(CommonDataKeys.VIRTUAL_FILE) ?: return
+        val target = event.noteTarget() ?: return
         val service = project.service<CodebaseNotesProjectService>()
-        val key = service.keyFor(file) ?: return
+        val key = target.key
         if (Messages.showYesNoDialog(
                 project,
                 CodebaseNotesBundle.message("note.remove.confirm", key),
@@ -128,10 +135,20 @@ class RemoveNoteAction : AnAction() {
 
     override fun update(event: AnActionEvent) {
         val project = event.project
-        val file = event.getData(CommonDataKeys.VIRTUAL_FILE)
-        event.presentation.isEnabledAndVisible = project != null && file != null &&
-            project.service<CodebaseNotesProjectService>().noteFor(file) != null
+        val target = event.noteTarget()
+        event.presentation.isEnabledAndVisible = project != null && target != null &&
+            project.service<CodebaseNotesProjectService>().noteFor(target.file) != null
     }
 
     override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.BGT
+}
+
+/** Project View symbol rows may expose PSI without a direct VirtualFile. */
+private fun AnActionEvent.noteTarget(): ProjectViewNoteTarget? {
+    val project = project ?: return null
+    return ProjectViewNoteTargetResolver.resolve(
+        project = project,
+        directFile = getData(CommonDataKeys.VIRTUAL_FILE),
+        psiElement = getData(CommonDataKeys.PSI_ELEMENT) ?: getData(CommonDataKeys.PSI_FILE),
+    )
 }

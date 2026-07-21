@@ -11,7 +11,7 @@ import java.awt.Color
 
 class ProjectViewNoteDecorator : ProjectViewNodeDecorator {
     override fun decorate(node: ProjectViewNode<*>, data: PresentationData) {
-        val file = node.virtualFile ?: return
+        val file = ProjectViewNoteTargetResolver.resolveForDecoration(node)?.file ?: return
         // decorate 会高频运行，只读内存快照，绝不能在项目树渲染路径上做磁盘 I/O。
         val service = node.project.service<CodebaseNotesProjectService>()
         val note = service.noteFor(file) ?: return

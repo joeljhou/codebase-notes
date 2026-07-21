@@ -147,12 +147,12 @@ cd src/jetbrains
 ./gradlew test
 ```
 
-以下是发布前待补的平台测试；当前 `./gradlew test` 覆盖纯核心和共享 fixture，不启动 IDE：
+当前 `./gradlew test` 已接入 IntelliJ Platform test framework，并使用 Heavy fixture 覆盖真实本地
+VFS/PSI、PSI-backed 文件替代节点、同文件成员去重、项目边界、多根与非本地节点；同时覆盖备注
+编辑意图和 Project View 刷新的 changed-key 合并、删除竞态。以下平台场景仍待补：
 
 - project service 创建与 dispose。
-- `VirtualFile` 到 root/key。
 - action 在无配置、future version、配置文件自身等状态下的可见性。
-- decorator 对有/无 note 的 `PresentationData`。
 - dirty Document 拒绝写入。
 - VFS rename/move 到 move plan。
 - case-insensitive root 使用目录项真实大小写。

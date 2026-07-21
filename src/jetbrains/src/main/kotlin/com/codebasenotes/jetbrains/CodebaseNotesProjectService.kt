@@ -11,7 +11,6 @@ import com.codebasenotes.core.noteStyle
 import com.codebasenotes.core.noteWithStyle
 import com.codebasenotes.core.noteWithText
 import com.fasterxml.jackson.databind.node.ObjectNode
-import com.intellij.ide.projectView.ProjectView
 import com.intellij.notification.NotificationGroupManager
 import com.intellij.notification.NotificationType
 import com.intellij.openapi.Disposable
@@ -19,9 +18,9 @@ import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.fileEditor.FileDocumentManager
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.VirtualFileManager
-import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.openapi.vfs.newvfs.BulkFileListener
 import com.intellij.openapi.vfs.newvfs.events.VFileEvent
 import com.intellij.openapi.vfs.newvfs.events.VFileMoveEvent
@@ -42,6 +41,10 @@ class CodebaseNotesProjectService(private val project: Project) : Disposable {
     private val executor = Executors.newSingleThreadExecutor { task ->
         Thread(task, "codebase-notes-${project.locationHash}").apply { isDaemon = true }
     }
+    private val projectViewRefreshCoordinator = ProjectViewRefreshCoordinator(
+        dispatcher = IntelliJProjectViewRefreshDispatcher(),
+        target = IntelliJProjectViewRefreshTarget(project),
+    )
 
     init {
         val connection = project.messageBus.connect(this)
@@ -69,7 +72,7 @@ class CodebaseNotesProjectService(private val project: Project) : Disposable {
     fun previewNoteStyle(key: String, style: NoteStyle?) {
         require(PathPolicy.isValidKey(key)) { CodebaseNotesBundle.message("path.invalid", key) }
         if (style == null) stylePreviews.remove(key) else stylePreviews[key] = style
-        refreshProjectView()
+        projectViewRefreshCoordinator.requestRefresh(setOf(key))
     }
 
     fun setNote(key: String, text: String): CompletableFuture<CommitResult> = submit {
@@ -208,35 +211,47 @@ class CodebaseNotesProjectService(private val project: Project) : Disposable {
 
     private fun refreshNow() {
         val path = configPath ?: return
-        when (val loaded = repository.load(path)) {
-            is LoadResult.Loaded -> snapshot.set(loaded.snapshot)
-            LoadResult.Missing -> snapshot.set(null)
+        val nextSnapshot = when (val loaded = repository.load(path)) {
+            is LoadResult.Loaded -> loaded.snapshot
+            LoadResult.Missing -> null
             is LoadResult.Invalid -> {
-                snapshot.set(null)
                 notifyError(CodebaseNotesBundle.message("config.invalid", loaded.message))
+                null
             }
             is LoadResult.ReadonlyFuture -> {
-                snapshot.set(null)
                 notifyError(CodebaseNotesBundle.message("config.futureVersion", loaded.version))
+                null
             }
         }
-        refreshProjectView()
+        val previous = snapshot.getAndSet(nextSnapshot)
+        val changedKeys = changedNoteKeys(previous?.document?.notes, nextSnapshot?.document?.notes)
+        if (changedKeys.isNotEmpty()) projectViewRefreshCoordinator.requestRefresh(changedKeys)
     }
 
     private fun acceptResult(result: CommitResult) {
-        when (result) {
-            is CommitResult.Committed -> snapshot.set(result.snapshot)
-            is CommitResult.NoChange -> snapshot.set(result.snapshot)
-            else -> Unit
+        val acceptedSnapshot = when (result) {
+            is CommitResult.Committed -> result.snapshot
+            is CommitResult.NoChange -> result.snapshot
+            else -> return
         }
-        VirtualFileManager.getInstance().asyncRefresh(null)
-        refreshProjectView()
+        // The decorator reads this atomic snapshot while Project View presentations are rebuilt.
+        // Publish state first; targeted invalidation will consequently read only this newer state.
+        val previous = snapshot.getAndSet(acceptedSnapshot)
+        val changedKeys = changedNoteKeys(previous?.document?.notes, acceptedSnapshot.document.notes)
+        if (result is CommitResult.Committed) refreshConfigFileInVfs()
+        if (changedKeys.isNotEmpty()) projectViewRefreshCoordinator.requestRefresh(changedKeys)
     }
 
-    private fun refreshProjectView() {
-        ApplicationManager.getApplication().invokeLater {
-            if (!project.isDisposed) ProjectView.getInstance(project).refresh()
-        }
+    private fun refreshConfigFileInVfs() {
+        val path = configPath ?: return
+        // ConfigRepository commits through an NIO atomic replace. Synchronize only that file with
+        // IntelliJ's VFS; a global asyncRefresh scans unrelated project and SDK roots unnecessarily.
+        LocalFileSystem.getInstance().refreshNioFiles(
+            listOf(path),
+            true,
+            false,
+            null,
+        )
     }
 
     private fun notifyError(message: String) {
@@ -255,6 +270,14 @@ class CodebaseNotesProjectService(private val project: Project) : Disposable {
 
     override fun dispose() {
         stylePreviews.clear()
+        projectViewRefreshCoordinator.dispose()
         executor.shutdownNow()
     }
+}
+
+internal fun changedNoteKeys(before: ObjectNode?, after: ObjectNode?): Set<String> {
+    val candidates = linkedSetOf<String>()
+    before?.fieldNames()?.forEachRemaining(candidates::add)
+    after?.fieldNames()?.forEachRemaining(candidates::add)
+    return candidates.filterTo(linkedSetOf()) { key -> before?.get(key) != after?.get(key) }
 }

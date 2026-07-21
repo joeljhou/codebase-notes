@@ -31,6 +31,14 @@ class LocalizationTest {
             "上下键实时预览，Enter 保存，Esc 取消",
             chinese.getString("note.style.previewHint"),
         )
+        assertEquals(
+            "备注不能只包含空白字符；清空输入可删除备注",
+            chinese.getString("note.validation.whitespaceOnly"),
+        )
+        assertEquals(
+            "备注不能超过 2000 个字符",
+            chinese.getString("note.validation.tooLong"),
+        )
     }
 
     private fun placeholders(value: String): List<String> =

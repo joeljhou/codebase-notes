@@ -1,5 +1,6 @@
 import org.jetbrains.kotlin.gradle.dsl.JvmDefaultMode
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import org.jetbrains.intellij.platform.gradle.TestFrameworkType
 
 plugins {
     java
@@ -25,10 +26,12 @@ dependencies {
 
     testImplementation(kotlin("test"))
     testImplementation("org.junit.jupiter:junit-jupiter:5.13.4")
-    testRuntimeOnly("junit:junit:4.13.2")
+    testImplementation("junit:junit:4.13.2")
+    testRuntimeOnly("org.junit.vintage:junit-vintage-engine:5.13.4")
 
     intellijPlatform {
         intellijIdea("2025.3.4")
+        testFramework(TestFrameworkType.Platform)
     }
 }
 
