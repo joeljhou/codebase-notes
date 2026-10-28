@@ -190,12 +190,16 @@ describe("Codebase Notes Extension Host", () => {
       "rename 后配置未迁移",
     );
     assert.equal(state.snapshot.config.notes["src/App.ts"], undefined);
+    const stored = JSON.parse(await readFile(state.configPath, "utf8"));
+    assert.equal(stored.notes.src["Main.ts"]._text, "应用入口");
+    assert.equal(stored.notes.src["Main.ts"]._meta.style, "core");
   });
 
   it("外部改配置会触发 watcher 刷新", async () => {
     const current = JSON.parse(await readFile(state.configPath, "utf8"));
-    current.notes["README.md"] = { text: "项目说明" };
-    current.notes["missing/Ghost.ts"] = { text: "待重新关联" };
+    assert.equal(current.version, 2);
+    current.notes["README.md"] = "项目说明";
+    current.notes.missing = { "Ghost.ts": "待重新关联" };
     await writeFile(state.configPath, JSON.stringify(current, null, 2) + "\n");
 
     await waitUntil(
@@ -232,6 +236,36 @@ describe("Codebase Notes Extension Host", () => {
     const [root] = await api.treeProvider.getChildren();
     const entries = await api.treeProvider.getChildren(root);
     assert.ok(entries.some((entry) => entry.label === "NewFile.ts"));
+  });
+
+  it("旧配置读取不改写，保存时迁移且父备注删除不影响文件展示", async () => {
+    const fileKey = state.noteForKey("src/Main.ts") ? "src/Main.ts" : "src/App.ts";
+    const legacy = JSON.stringify({ version: 1, notes: {
+      ...state.snapshot?.config.notes,
+      [fileKey]: { text: "应用入口", style: "core" },
+      src: { text: "源代码目录", style: "focus", future: [null, true] },
+    } });
+    await writeFile(state.configPath, legacy);
+    await state.refresh();
+    assert.equal(await readFile(state.configPath, "utf8"), legacy);
+    assert.equal(state.noteForKey("constructor"), undefined);
+    assert.equal(state.noteForKey("__proto__"), undefined);
+    const migrated = await state.repository.setNote(state.snapshot, "src", state.noteForKey("src"));
+    state.accept(migrated);
+    api.manager.notifyStateChanged();
+    assert.equal(migrated.kind, "committed");
+    const stored = JSON.parse(await readFile(state.configPath, "utf8"));
+    assert.equal(stored.version, 2);
+    assert.deepEqual(stored.notes.src._meta, { style: "focus", future: [null, true] });
+    const roots = await api.treeProvider.getChildren();
+    const src = (await api.treeProvider.getChildren(roots[0])).find((entry) => entry.label === "src");
+    assert.equal(src.description, "源代码目录");
+    const removed = await state.repository.setNote(state.snapshot, "src", null);
+    state.accept(removed);
+    api.manager.notifyStateChanged();
+    assert.equal(removed.kind, "committed");
+    assert.equal(state.noteForKey(fileKey).text, "应用入口");
+    assert.equal(JSON.parse(await readFile(state.configPath, "utf8")).notes.src._text, undefined);
   });
 
   it("配置 Document dirty 状态可被写入前置检查识别", async () => {

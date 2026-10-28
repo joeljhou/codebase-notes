@@ -1,3 +1,4 @@
+import { ownValue, setOwn } from "./json.js";
 import { isDeepStrictEqual } from "node:util";
 import type { Note } from "./types.js";
 
@@ -16,7 +17,7 @@ function apply(
   if (value === undefined) {
     delete target[key];
   } else {
-    target[key] = value;
+    setOwn(target, key, value);
   }
 }
 
@@ -29,8 +30,8 @@ export function mergeNotes(
   const conflicts: string[] = [];
 
   for (const [key, intendedOrNull] of Object.entries(intent)) {
-    const baseValue = base[key];
-    const diskValue = disk[key];
+    const baseValue = ownValue(base, key);
+    const diskValue = ownValue(disk, key);
     const intended = intendedOrNull ?? undefined;
 
     // 三个判断的顺序对应协议表：磁盘未变、用户实际没改、两边已相同。

@@ -1,3 +1,4 @@
+import { ownValue, setOwn } from "./json.js";
 import { compareUnicodeScalars } from "./serializer.js";
 import type { Note } from "./types.js";
 
@@ -32,7 +33,7 @@ export function planMove(
   for (const source of sourceKeys) {
     const suffix = source.slice(oldPrefix.length);
     const destination = `${newPrefix}${suffix}`;
-    mapping[source] = destination;
+    setOwn(mapping, source, destination);
     if (
       Object.prototype.hasOwnProperty.call(notes, destination) &&
       !sources.has(destination)
@@ -57,7 +58,7 @@ export function applyMove(
   const moved = { ...notes };
   const saved = new Map<string, Note>();
   for (const [source, destination] of Object.entries(plan.mapping)) {
-    const note = notes[source];
+    const note = ownValue(notes, source);
     if (note !== undefined) {
       saved.set(destination, note);
       delete moved[source];
@@ -65,7 +66,7 @@ export function applyMove(
   }
   // 先删全部源，再写目标，case-only rename 和目录内互换不会覆盖尚未保存的值。
   for (const [destination, note] of saved) {
-    moved[destination] = note;
+    setOwn(moved, destination, note);
   }
   return moved;
 }

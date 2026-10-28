@@ -1,150 +1,234 @@
 {
-  "version": 1,
+  "version": 2,
   "notes": {
-    ".": {
-      "text": "★ 跨 IDE 代码备注",
+    "_text": "★ 跨 IDE 代码备注",
+    "_meta": {
       "style": "core"
     },
-    "LICENSE": {
-      "text": "⚠ MIT 开源许可"
-    },
-    "README.md": {
-      "text": "▤ 安装与开发入口"
-    },
+    "LICENSE": "⚠ MIT 开源许可",
+    "README.md": "▤ 安装与开发入口",
     "VERSION": {
-      "text": "✧ 双端版本唯一源",
-      "style": "stable"
+      "_text": "✧ 双端版本唯一源",
+      "_meta": {
+        "style": "stable"
+      }
     },
     "artifacts": {
-      "text": "⚠ 双端发布包汇总",
-      "style": "focus"
+      "_text": "⚠ 双端发布包汇总",
+      "_meta": {
+        "style": "focus"
+      }
     },
     "deploy.sh": {
-      "text": "⚙ 双端工程入口",
-      "style": "important"
+      "_text": "⚙ 双端工程入口",
+      "_meta": {
+        "style": "important"
+      }
     },
     "docs": {
-      "text": "设计与维护文档"
-    },
-    "docs/README.md": {
-      "text": "文档维护规范"
-    },
-    "docs/platform/reports/R20260717_platform_codebase_notes_design_review.md": {
-      "text": "方案设计与评审结论"
-    },
-    "docs/platform/specs/S20260717_platform_codebase_notes_implementation.md": {
-      "text": "双端实现方案",
-      "style": "core"
-    },
-    "docs/platform/specs/S20260717_platform_codebase_notes_integration_test_plan.md": {
-      "text": "双端集成测试",
-      "style": "focus"
-    },
-    "docs/platform/specs/S20260717_platform_codebase_notes_protocol.md": {
-      "text": "v1 协议规范",
-      "style": "important"
-    },
-    "docs/platform/specs/S20260720_platform_ai_initialization.md": {
-      "text": "AI 初始化规范",
-      "style": "stable"
-    },
-    "docs/platform/specs/S20260721_platform_note_icon_convention.md": {
-      "text": "备注图标规范",
-      "style": "extension"
+      "_text": "设计与维护文档",
+      "README.md": "文档维护规范",
+      "platform": {
+        "reports": {
+          "R20260717_platform_codebase_notes_design_review.md": "方案设计与评审结论"
+        },
+        "specs": {
+          "S20260717_platform_codebase_notes_implementation.md": {
+            "_text": "双端实现方案",
+            "_meta": {
+              "style": "core"
+            }
+          },
+          "S20260717_platform_codebase_notes_integration_test_plan.md": {
+            "_text": "双端集成测试",
+            "_meta": {
+              "style": "focus"
+            }
+          },
+          "S20260717_platform_codebase_notes_protocol.md": {
+            "_text": "v1 协议规范",
+            "_meta": {
+              "style": "important"
+            }
+          },
+          "S20260720_platform_ai_initialization.md": {
+            "_text": "AI 初始化规范",
+            "_meta": {
+              "style": "stable"
+            }
+          },
+          "S20260721_platform_note_icon_convention.md": {
+            "_text": "备注图标规范",
+            "_meta": {
+              "style": "extension"
+            }
+          }
+        }
+      }
     },
     "scripts": {
-      "text": "契约与版本脚本"
-    },
-    "scripts/verify-all.sh": {
-      "text": "全量验证入口",
-      "style": "important"
+      "_text": "契约与版本脚本",
+      "verify-all.sh": {
+        "_text": "全量验证入口",
+        "_meta": {
+          "style": "important"
+        }
+      }
     },
     "spec": {
-      "text": "✓ 双端共享契约",
-      "style": "stable"
-    },
-    "spec/codebase-notes.schema.json": {
-      "text": "配置格式唯一契约",
-      "style": "stable"
-    },
-    "spec/conformance": {
-      "text": "双端行为基准",
-      "style": "stable"
+      "_text": "✓ 双端共享契约",
+      "_meta": {
+        "style": "stable"
+      },
+      "codebase-notes.schema.json": {
+        "_text": "配置格式唯一契约",
+        "_meta": {
+          "style": "stable"
+        }
+      },
+      "conformance": {
+        "_text": "双端行为基准",
+        "_meta": {
+          "style": "stable"
+        }
+      }
     },
     "src": {
-      "text": "◎ 新增 IDE 适配入口",
-      "style": "extension"
-    },
-    "src/jetbrains/build.gradle.kts": {
-      "text": "JetBrains 构建入口",
-      "style": "important"
-    },
-    "src/jetbrains/src/main/kotlin/com/codebasenotes/core": {
-      "text": "JetBrains 协议核心",
-      "style": "important"
-    },
-    "src/jetbrains/src/main/kotlin/com/codebasenotes/core/AtomicFileStore.kt": {
-      "text": "原子写入与文件锁",
-      "style": "focus"
-    },
-    "src/jetbrains/src/main/kotlin/com/codebasenotes/core/ConfigRepository.kt": {
-      "text": "配置读写主链路",
-      "style": "important"
-    },
-    "src/jetbrains/src/main/kotlin/com/codebasenotes/jetbrains/CodebaseNotesProjectService.kt": {
-      "text": "JetBrains 状态中枢",
-      "style": "core"
-    },
-    "src/jetbrains/src/main/resources/META-INF/plugin.xml": {
-      "text": "插件能力注册入口",
-      "style": "extension"
-    },
-    "src/jetbrains/src/test/kotlin/com/codebasenotes/core/ConformanceTest.kt": {
-      "text": "共享协议一致性测试"
-    },
-    "src/vscode/integration/extension.test.cjs": {
-      "text": "扩展宿主集成测试"
-    },
-    "src/vscode/package.json": {
-      "text": "VS Code 能力清单",
-      "style": "extension"
-    },
-    "src/vscode/resources/codebase-notes.schema.json": {
-      "text": "由根 Schema 生成",
-      "style": "focus"
-    },
-    "src/vscode/src/core": {
-      "text": "VS Code 协议核心",
-      "style": "important"
-    },
-    "src/vscode/src/core/file-store.ts": {
-      "text": "原子写入与文件锁",
-      "style": "focus"
-    },
-    "src/vscode/src/core/repository.ts": {
-      "text": "配置读写主链路",
-      "style": "important"
-    },
-    "src/vscode/src/extension.ts": {
-      "text": "VS Code 插件主入口",
-      "style": "core"
-    },
-    "src/vscode/src/platform/workspace-manager.ts": {
-      "text": "工作区状态中枢",
-      "style": "important"
-    },
-    "src/vscode/src/test/fixtures.test.ts": {
-      "text": "共享协议一致性测试"
-    },
-    "src/vscode/src/ui/commands.ts": {
-      "text": "新增命令注册入口",
-      "style": "extension"
-    },
-    "src/vscode/src/ui/decoration-provider.ts": {
-      "text": "备注颜色渲染"
-    },
-    "src/vscode/src/ui/tree-provider.ts": {
-      "text": "代码备注树视图"
+      "_text": "◎ 新增 IDE 适配入口",
+      "_meta": {
+        "style": "extension"
+      },
+      "jetbrains": {
+        "build.gradle.kts": {
+          "_text": "JetBrains 构建入口",
+          "_meta": {
+            "style": "important"
+          }
+        },
+        "src": {
+          "main": {
+            "kotlin": {
+              "com": {
+                "codebasenotes": {
+                  "core": {
+                    "_text": "JetBrains 协议核心",
+                    "_meta": {
+                      "style": "important"
+                    },
+                    "AtomicFileStore.kt": {
+                      "_text": "原子写入与文件锁",
+                      "_meta": {
+                        "style": "focus"
+                      }
+                    },
+                    "ConfigRepository.kt": {
+                      "_text": "配置读写主链路",
+                      "_meta": {
+                        "style": "important"
+                      }
+                    }
+                  },
+                  "jetbrains": {
+                    "CodebaseNotesProjectService.kt": {
+                      "_text": "JetBrains 状态中枢",
+                      "_meta": {
+                        "style": "core"
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "resources": {
+              "META-INF": {
+                "plugin.xml": {
+                  "_text": "插件能力注册入口",
+                  "_meta": {
+                    "style": "extension"
+                  }
+                }
+              }
+            }
+          },
+          "test": {
+            "kotlin": {
+              "com": {
+                "codebasenotes": {
+                  "core": {
+                    "ConformanceTest.kt": "共享协议一致性测试"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "vscode": {
+        "integration": {
+          "extension.test.cjs": "扩展宿主集成测试"
+        },
+        "package.json": {
+          "_text": "VS Code 能力清单",
+          "_meta": {
+            "style": "extension"
+          }
+        },
+        "resources": {
+          "codebase-notes.schema.json": {
+            "_text": "由根 Schema 生成",
+            "_meta": {
+              "style": "focus"
+            }
+          }
+        },
+        "src": {
+          "core": {
+            "_text": "VS Code 协议核心",
+            "_meta": {
+              "style": "important"
+            },
+            "file-store.ts": {
+              "_text": "原子写入与文件锁",
+              "_meta": {
+                "style": "focus"
+              }
+            },
+            "repository.ts": {
+              "_text": "配置读写主链路",
+              "_meta": {
+                "style": "important"
+              }
+            }
+          },
+          "extension.ts": {
+            "_text": "VS Code 插件主入口",
+            "_meta": {
+              "style": "core"
+            }
+          },
+          "platform": {
+            "workspace-manager.ts": {
+              "_text": "工作区状态中枢",
+              "_meta": {
+                "style": "important"
+              }
+            }
+          },
+          "test": {
+            "fixtures.test.ts": "共享协议一致性测试"
+          },
+          "ui": {
+            "commands.ts": {
+              "_text": "新增命令注册入口",
+              "_meta": {
+                "style": "extension"
+              }
+            },
+            "decoration-provider.ts": "备注颜色渲染",
+            "tree-provider.ts": "代码备注树视图"
+          }
+        }
+      }
     }
   }
 }

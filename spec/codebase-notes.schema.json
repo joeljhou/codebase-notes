@@ -1,59 +1,81 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "title": "Codebase Notes v1",
-  "description": "Editor-neutral notes attached to configuration-root-relative file and directory paths.",
+  "title": "Codebase Notes",
+  "description": "Editor-neutral notes. Version 2 stores a compact directory tree; version 1 flat paths remain readable.",
   "type": "object",
-  "required": [
-    "version",
-    "notes"
-  ],
+  "required": ["version", "notes"],
   "properties": {
-    "$schema": {
-      "type": "string",
-      "format": "uri-reference"
-    },
-    "version": {
-      "type": "integer",
-      "const": 1
-    },
-    "notes": {
-      "type": "object",
-      "propertyNames": {
-        "pattern": "^(?:\\.|(?!/)(?![A-Za-z]:/)(?!.*\\\\)(?!.*//)(?!.*\\/$)(?!\\.{1,2}(?:/|$))(?!.*\\/\\.{1,2}(?:/|$))(?!\\.codebase-notes\\.json$)(?!.*\\/\\.codebase-notes\\.json$)(?!.*[\\u0000-\\u001F\\u007F]).+)$"
-      },
-      "additionalProperties": {
-        "$ref": "#/$defs/note"
-      }
-    }
+    "$schema": { "type": "string", "format": "uri-reference" },
+    "version": { "type": "integer", "enum": [1, 2] },
+    "notes": { "type": "object" }
   },
-  "additionalProperties": true,
-  "$defs": {
-    "note": {
-      "type": "object",
-      "required": [
-        "text"
-      ],
-      "properties": {
-        "text": {
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 2000,
-          "pattern": "\\S"
-        },
-        "style": {
-          "type": "string",
-          "description": "Code-map emphasis: default (ordinary), important (important module or entrypoint), focus (easy-to-miss context), core (project backbone), stable (canonical baseline), or extension (extension point).",
-          "enum": [
-            "default",
-            "important",
-            "focus",
-            "core",
-            "stable",
-            "extension"
-          ]
+  "allOf": [
+    {
+      "if": { "properties": { "version": { "const": 1 } } },
+      "then": {
+        "properties": {
+          "notes": {
+            "type": "object",
+            "propertyNames": {
+              "pattern": "^(?:\\.|(?!/)(?![A-Za-z]:/)(?!.*\\\\)(?!.*//)(?!.*\\/$)(?!\\.{1,2}(?:/|$))(?!.*\\/\\.{1,2}(?:/|$))(?!\\.codebase-notes\\.json$)(?!.*\\/\\.codebase-notes\\.json$)(?!.*[\\u0000-\\u001F\\u007F]).+)$"
+            },
+            "additionalProperties": { "$ref": "#/$defs/note" }
+          }
         }
       },
+      "else": { "properties": { "notes": { "$ref": "#/$defs/tree" } } }
+    }
+  ],
+  "additionalProperties": true,
+  "$defs": {
+    "text": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 2000,
+      "pattern": "\\S"
+    },
+    "style": {
+      "type": "string",
+      "description": "Code-map emphasis.",
+      "enum": ["default", "important", "focus", "core", "stable", "extension"]
+    },
+    "note": {
+      "type": "object",
+      "required": ["text"],
+      "properties": {
+        "text": { "$ref": "#/$defs/text" },
+        "style": { "$ref": "#/$defs/style" }
+      },
       "additionalProperties": true
+    },
+    "metadata": {
+      "type": "object",
+      "properties": {
+        "text": false,
+        "style": { "$ref": "#/$defs/style" }
+      },
+      "additionalProperties": true
+    },
+    "tree": {
+      "type": "object",
+      "properties": {
+        "_text": { "$ref": "#/$defs/text" },
+        "_meta": { "$ref": "#/$defs/metadata" }
+      },
+      "dependentRequired": { "_meta": ["_text"] },
+      "propertyNames": {
+        "anyOf": [
+          { "enum": ["_text", "_meta"] },
+          { "pattern": "^(?!\\.{1,2}$)(?!_[^_])(?!_$)(?!.*[/\\\\\\u0000-\\u001F\\u007F]).+$" }
+        ]
+      },
+      "additionalProperties": { "$ref": "#/$defs/node" }
+    },
+    "node": {
+      "anyOf": [
+        { "$ref": "#/$defs/text" },
+        { "$ref": "#/$defs/tree" }
+      ]
     }
   }
 }

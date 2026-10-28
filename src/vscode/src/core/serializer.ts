@@ -1,4 +1,5 @@
-import type { ConfigV1, JsonObject, JsonValue, Note } from "./types.js";
+import type { ConfigDocument, JsonObject, JsonValue } from "./types.js";
+import { encodeTree } from "./tree-codec.js";
 
 export function compareUnicodeScalars(left: string, right: string): number {
   // JS 默认按 UTF-16 code unit 排序；显式按 code point 比较，避免 emoji
@@ -30,42 +31,47 @@ function orderedKeys(value: JsonObject, preferred: readonly string[]): string[] 
   });
 }
 
-function normalizeGeneric(value: JsonValue): JsonValue {
-  if (Array.isArray(value)) {
-    return value.map(normalizeGeneric);
-  }
+type Context = "root" | "tree" | "metadata" | "generic";
+
+function render(value: JsonValue, depth: number, context: Context): string {
   if (typeof value !== "object" || value === null) {
-    return Object.is(value, -0) ? 0 : value;
+    return JSON.stringify(value);
   }
-  const normalized: JsonObject = {};
-  for (const key of orderedKeys(value, [])) {
-    normalized[key] = normalizeGeneric(value[key] as JsonValue);
+  const indent = "  ".repeat(depth);
+  const childIndent = `${indent}  `;
+  if (Array.isArray(value)) {
+    if (value.length === 0) return "[]";
+    const items = value.map((child) =>
+      `${childIndent}${render(child, depth + 1, "generic")}`,
+    );
+    return `[\n${items.join(",\n")}\n${indent}]`;
   }
-  return normalized;
-}
-
-function normalizeNote(note: Note): JsonObject {
-  const normalized: JsonObject = {};
-  for (const key of orderedKeys(note, ["text", "style"])) {
-    normalized[key] = normalizeGeneric(note[key] as JsonValue);
-  }
-  return normalized;
-}
-
-export function stableSerialize(config: ConfigV1): string {
-  const normalized: JsonObject = {};
-  for (const key of orderedKeys(config, ["$schema", "version", "notes"])) {
-    if (key === "notes") {
-      const notes: JsonObject = {};
-      for (const noteKey of Object.keys(config.notes).sort(
-        compareUnicodeScalars,
-      )) {
-        notes[noteKey] = normalizeNote(config.notes[noteKey] as Note);
-      }
-      normalized.notes = notes;
-    } else {
-      normalized[key] = normalizeGeneric(config[key] as JsonValue);
+  const preferred = context === "root"
+    ? ["$schema", "version", "notes"]
+    : context === "tree"
+      ? ["_text", "_meta"]
+      : context === "metadata" ? ["style"] : [];
+  const keys = orderedKeys(value, preferred);
+  if (keys.length === 0) return "{}";
+  // Emit members directly: JSON.stringify(object) reorders integer-like keys.
+  const members = keys.map((key) => {
+    let childContext: Context = "generic";
+    if (context === "root" && key === "notes") {
+      childContext = "tree";
+    } else if (context === "tree") {
+      childContext = key === "_meta" ? "metadata" : "tree";
     }
-  }
-  return `${JSON.stringify(normalized, null, 2)}\n`;
+    const child = render(value[key] as JsonValue, depth + 1, childContext);
+    return `${childIndent}${JSON.stringify(key)}: ${child}`;
+  });
+  return `{\n${members.join(",\n")}\n${indent}}`;
+}
+
+export function stableSerialize(config: ConfigDocument): string {
+  const root: JsonObject = {
+    ...config,
+    version: 2,
+    notes: encodeTree(config.notes),
+  };
+  return `${render(root, 0, "root")}\n`;
 }

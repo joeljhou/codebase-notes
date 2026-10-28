@@ -1,0 +1,87 @@
+{
+  "operation": "roundtrip-config",
+  "cases": [
+    {
+      "id": "tree/legacy-metadata-root-and-orphans",
+      "input": {
+        "config": {
+          "$schema": "./spec/codebase-notes.schema.json",
+          "version": 1,
+          "rootFuture": {"__proto__": {"kept": true}, "notes": [null, false, 1.5]},
+          "notes": {
+            ".": {"text": "项目", "style": "default", "future": [null, {"text": "opaque"}]},
+            "src": {"text": "源代码", "style": "core"},
+            "src/.vuepress/config.ts": {"text": "配置", "future": {"_text": "not structure", "_meta": {}, "__proto__": "保留"}},
+            "src/.vuepress/path": {"text": "路径"},
+            "src/.vuepress/path/navbar.ts": {"text": "导航栏"},
+            "empty": {"text": "空目录"},
+            "missing/deep/same.ts": {"text": "不存在的路径"},
+            "other/same.ts": {"text": "另一个同名文件"}
+          }
+        }
+      },
+      "expected": {
+        "notes": {
+          ".": {"text": "项目", "style": "default", "future": [null, {"text": "opaque"}]},
+          "src": {"text": "源代码", "style": "core"},
+          "src/.vuepress/config.ts": {"text": "配置", "future": {"_text": "not structure", "_meta": {}, "__proto__": "保留"}},
+          "src/.vuepress/path": {"text": "路径"},
+          "src/.vuepress/path/navbar.ts": {"text": "导航栏"},
+          "empty": {"text": "空目录"},
+          "missing/deep/same.ts": {"text": "不存在的路径"},
+          "other/same.ts": {"text": "另一个同名文件"}
+        }
+      }
+    },
+    {
+      "id": "tree/escaped-filenames-and-prototype-keys",
+      "input": {
+        "config": {
+          "version": 2,
+          "__proto__": {"keep": true},
+          "notes": {
+            "_text": "根备注",
+            "__text": {"_text": "真实 _text", "__meta": "_text/_meta"},
+            "__meta": {"_text": "真实 _meta", "_meta": {"style": "focus", "text-like": {"text": "x"}}},
+            "___text": "真实 __text",
+            "__": "真实下划线",
+            "___proto__": {"_text": "原型名", "_meta": {"__proto__": {"enabled": true}}},
+            "constructor": "构造器名",
+            "prototype": "prototype",
+            "toString": "toString",
+            "hasOwnProperty": "hasOwnProperty",
+            "2": "two",
+            "10": "ten",
+            "text": "普通 text 文件",
+            "中文 😀": {"space name.ts": "  多行\n备注  "},
+            "unannotated-empty": {}
+          }
+        }
+      },
+      "expected": {
+        "notes": {
+          ".": {"text": "根备注"},
+          "_text": {"text": "真实 _text"},
+          "_text/_meta": {"text": "_text/_meta"},
+          "_meta": {"text": "真实 _meta", "style": "focus", "text-like": {"text": "x"}},
+          "__text": {"text": "真实 __text"},
+          "_": {"text": "真实下划线"},
+          "__proto__": {"text": "原型名", "__proto__": {"enabled": true}},
+          "constructor": {"text": "构造器名"},
+          "prototype": {"text": "prototype"},
+          "toString": {"text": "toString"},
+          "hasOwnProperty": {"text": "hasOwnProperty"},
+          "2": {"text": "two"},
+          "10": {"text": "ten"},
+          "text": {"text": "普通 text 文件"},
+          "中文 😀/space name.ts": {"text": "  多行\n备注  "}
+        }
+      }
+    },
+    {
+      "id": "tree/legacy-config-filename-as-structural-parent",
+      "input": {"config": {"version": 1, "notes": {".codebase-notes.json/child": {"text": "保留既有合法路径"}}}},
+      "expected": {"notes": {".codebase-notes.json/child": {"text": "保留既有合法路径"}}}
+    }
+  ]
+}

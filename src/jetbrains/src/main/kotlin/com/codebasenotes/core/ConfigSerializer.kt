@@ -5,35 +5,45 @@ import com.fasterxml.jackson.databind.node.ArrayNode
 import com.fasterxml.jackson.databind.node.DoubleNode
 import com.fasterxml.jackson.databind.node.IntNode
 import com.fasterxml.jackson.databind.node.ObjectNode
-import com.fasterxml.jackson.core.util.DefaultIndenter
-import com.fasterxml.jackson.core.util.DefaultPrettyPrinter
-import com.fasterxml.jackson.core.util.Separators
 
 object ConfigSerializer {
     val scalarComparator = Comparator<String> { left, right -> compareUnicodeScalars(left, right) }
 
     fun serialize(document: ConfigDocument): ByteArray {
-        val normalized = sortObject(document.root, listOf("\$schema", "version", "notes")) { key, value ->
-            when (key) {
-                "notes" -> sortObject(value as ObjectNode) { _, note ->
-                    sortObject(note as ObjectNode, listOf("text", "style"))
-                }
+        val root = document.root.deepCopy().apply {
+            put("version", 2)
+            set<ObjectNode>("notes", TreeCodec.encode(document.notes))
+        }
+        val normalized = sortObject(root, listOf("\$schema", "version", "notes")) { key, value ->
+            if (key == "notes") sortTree(value as ObjectNode) else sortNode(value)
+        }
+        return (render(normalized) + '\n').toByteArray(Charsets.UTF_8)
+    }
+
+    private fun render(node: JsonNode, depth: Int = 0): String {
+        val indent = "  ".repeat(depth)
+        val childIndent = "$indent  "
+        return when {
+            node is ObjectNode -> if (node.isEmpty) "{}" else node.properties().joinToString(
+                separator = ",\n", prefix = "{\n", postfix = "\n$indent}",
+            ) { (key, value) ->
+                "$childIndent${ConfigParser.mapper.writeValueAsString(key)}: ${render(value, depth + 1)}"
+            }
+            node is ArrayNode -> if (node.isEmpty) "[]" else node.joinToString(
+                separator = ",\n", prefix = "[\n", postfix = "\n$indent]",
+            ) { "$childIndent${render(it, depth + 1)}" }
+            else -> ConfigParser.mapper.writeValueAsString(node)
+        }
+    }
+
+    private fun sortTree(node: ObjectNode): ObjectNode =
+        sortObject(node, listOf("_text", "_meta")) { key, value ->
+            when {
+                key == "_meta" -> sortObject(value as ObjectNode, listOf("style"))
+                value is ObjectNode -> sortTree(value)
                 else -> sortNode(value)
             }
         }
-        val indenter = DefaultIndenter("  ", "\n")
-        val prettyPrinter = DefaultPrettyPrinter()
-            .withObjectIndenter(indenter)
-            .withArrayIndenter(indenter)
-            .withSeparators(
-                Separators.createDefaultInstance()
-                    .withObjectFieldValueSpacing(Separators.Spacing.AFTER),
-            )
-        return ConfigParser.mapper.writer(prettyPrinter)
-            .writeValueAsString(normalized)
-            .plus('\n')
-            .toByteArray(Charsets.UTF_8)
-    }
 
     fun sortedKeys(keys: Iterable<String>): List<String> = keys.sortedWith(scalarComparator)
 

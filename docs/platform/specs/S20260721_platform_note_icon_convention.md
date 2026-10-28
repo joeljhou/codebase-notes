@@ -1,9 +1,9 @@
 # Codebase Notes 备注图标规范
 
 > 状态：已完成
-> 最后更新：2026-07-21
-> 适用范围：Codebase Notes v1 备注文本与 AI 初始化
-> 关联文档：[AI 初始化规范](S20260720_platform_ai_initialization.md)；[v1 协议](S20260717_platform_codebase_notes_protocol.md)
+> 最后更新：2026-10-27
+> 适用范围：Codebase Notes v2 / v1 备注文本与 AI 初始化
+> 关联文档：[AI 初始化规范](S20260720_platform_ai_initialization.md)；[配置协议](S20260717_platform_codebase_notes_protocol.md)
 
 ## 1. 结论
 
@@ -17,7 +17,7 @@
 
 ## 2. 目标与范围
 
-这套图标用于提高项目树的扫读效率，让人和 AI 能快速区分核心、入口、契约、扩展点、风险和工程动作。它适用于 `.codebase-notes.json` 中的 `notes.*.text`。
+这套图标用于提高项目树的扫读效率，让人和 AI 能快速区分核心、入口、契约、扩展点、风险和工程动作。它适用于 `.codebase-notes.json` v2 树节点中的字符串备注或 `_text`，也适用于旧 v1 的 `notes.*.text`；v2 样式位于 `_meta.style`。格式迁移必须原样保留已有图标与正文，不借迁移修改备注内容。
 
 本规范不改变 JSON 协议，不新增字段，也不规定 IDE 内的具体颜色。文件类型图标、产品 Logo、状态栏图标和普通文档排版不在范围内。
 

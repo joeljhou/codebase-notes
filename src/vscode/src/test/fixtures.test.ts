@@ -9,7 +9,7 @@ import {
   compareUnicodeScalars,
   stableSerialize,
 } from "../core/serializer.js";
-import type { ConfigV1, Note } from "../core/types.js";
+import type { ConfigDocument, Note } from "../core/types.js";
 import { createParser, projectRoot } from "./helpers.js";
 
 interface FixtureCase {
@@ -75,11 +75,24 @@ for (const file of readdirSync(fixturesDirectory).filter((name) =>
           assert.deepEqual(
             {
               text: stableSerialize(
-                fixtureCase.input.config as unknown as ConfigV1,
+                fixtureCase.input.config as unknown as ConfigDocument,
               ),
             },
             fixtureCase.expected,
           );
+          break;
+        }
+        case "roundtrip-config": {
+          const parsed = parser.parse(JSON.stringify(fixtureCase.input.config));
+          assert.equal(parsed.mode, "writable");
+          if (parsed.mode !== "writable") break;
+          assert.deepEqual(parsed.config.notes, fixtureCase.expected.notes);
+          const serialized = stableSerialize(parsed.config);
+          const reparsed = parser.parse(serialized);
+          assert.equal(reparsed.mode, "writable");
+          if (reparsed.mode !== "writable") break;
+          assert.deepEqual(reparsed.config, { ...parsed.config, version: 2 });
+          assert.equal(stableSerialize(reparsed.config), serialized);
           break;
         }
         case "merge": {

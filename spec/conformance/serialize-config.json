@@ -5,22 +5,10 @@
       "id": "serialize/stable-unknown-fields",
       "input": {
         "config": {
-          "z": [
-            1,
-            "x"
-          ],
+          "z": [1, "x"],
           "notes": {
-            "😀": {
-              "future": {
-                "b": true,
-                "a": false
-              },
-              "text": "emoji"
-            },
-            "a.ts": {
-              "style": "important",
-              "text": "A"
-            }
+            "😀": {"future": {"b": true, "a": false}, "text": "emoji"},
+            "a.ts": {"style": "important", "text": "A"}
           },
           "version": 1,
           "$schema": "./spec/codebase-notes.schema.json",
@@ -28,7 +16,24 @@
         }
       },
       "expected": {
-        "text": "{\n  \"$schema\": \"./spec/codebase-notes.schema.json\",\n  \"version\": 1,\n  \"notes\": {\n    \"a.ts\": {\n      \"text\": \"A\",\n      \"style\": \"important\"\n    },\n    \"😀\": {\n      \"text\": \"emoji\",\n      \"future\": {\n        \"a\": false,\n        \"b\": true\n      }\n    }\n  },\n  \"a\": 0,\n  \"z\": [\n    1,\n    \"x\"\n  ]\n}\n"
+        "text": "{\n  \"$schema\": \"./spec/codebase-notes.schema.json\",\n  \"version\": 2,\n  \"notes\": {\n    \"a.ts\": {\n      \"_text\": \"A\",\n      \"_meta\": {\n        \"style\": \"important\"\n      }\n    },\n    \"😀\": {\n      \"_text\": \"emoji\",\n      \"_meta\": {\n        \"future\": {\n          \"a\": false,\n          \"b\": true\n        }\n      }\n    }\n  },\n  \"a\": 0,\n  \"z\": [\n    1,\n    \"x\"\n  ]\n}\n"
+      }
+    },
+    {
+      "id": "serialize/integer-filenames-and-metadata-keys",
+      "input": {
+        "config": {
+          "version": 1,
+          "notes": {
+            "2": {"text": "two"},
+            "10": {"text": "ten", "style": "default", "2": {}, "10": []},
+            "src": {"text": "源代码"},
+            "src/_text": {"text": "特殊文件"}
+          }
+        }
+      },
+      "expected": {
+        "text": "{\n  \"version\": 2,\n  \"notes\": {\n    \"10\": {\n      \"_text\": \"ten\",\n      \"_meta\": {\n        \"style\": \"default\",\n        \"10\": [],\n        \"2\": {}\n      }\n    },\n    \"2\": \"two\",\n    \"src\": {\n      \"_text\": \"源代码\",\n      \"__text\": \"特殊文件\"\n    }\n  }\n}\n"
       }
     }
   ]

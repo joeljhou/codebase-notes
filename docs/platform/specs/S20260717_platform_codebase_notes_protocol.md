@@ -1,11 +1,11 @@
-# Codebase Notes v1 协议规范
+# Codebase Notes 配置协议（v2，兼容 v1）
 
-> 状态：实现中（核心契约已落地）
-> 最后更新：2026-07-20
+> 状态：已实现
+> 最后更新：2026-10-27
 > 适用范围：本地文件系统上的 JetBrains 与 VS Code Desktop 适配器
 > 关联文档：[实现方案](S20260717_platform_codebase_notes_implementation.md)、[集成测试方案](S20260717_platform_codebase_notes_integration_test_plan.md)、[设计评审](../reports/R20260717_platform_codebase_notes_design_review.md)
 
-本文只定义 v1 为了“两种 IDE 共用一份备注”必须一致的行为。文中“必须/禁止”需要 conformance fixture；平台 UI 细节不进入协议。
+本文定义两种 IDE 共用一份备注时必须一致的行为。v2 只改变磁盘表示；内部仍使用扁平的规范路径与完整备注对象。文中“必须/禁止”需要 conformance fixture；平台 UI 细节不进入协议。
 
 ## 1. 范围与术语
 
@@ -28,7 +28,7 @@ v1 的约束刻意保持简单：
 
 ```json
 {
-  "version": 1,
+  "version": 2,
   "notes": {}
 }
 ```
@@ -38,29 +38,47 @@ v1 的约束刻意保持简单：
 ```json
 {
   "$schema": "./spec/codebase-notes.schema.json",
-  "version": 1,
+  "version": 2,
   "notes": {
-    ".": {
-      "text": "支付服务主干",
-      "style": "core"
-    },
-    "src/payment/PaymentService.kt": {
-      "text": "支付核心链路",
-      "style": "core"
+    "_text": "支付服务主干",
+    "_meta": { "style": "core" },
+    "src": {
+      "payment": {
+        "_text": "支付模块",
+        "PaymentService.kt": {
+          "_text": "支付核心链路",
+          "_meta": { "style": "core" }
+        },
+        "README.md": "支付模块说明"
+      }
     }
   }
 }
 ```
 
-### 2.1 字段
+### 2.1 字段与树节点
 
 | 字段 | 要求 |
 | --- | --- |
 | `$schema` | 可选，只用于编辑器提示；插件校验使用内置 Schema |
-| `version` | 必填，v1 固定为整数 `1` |
-| `notes` | 必填，key 为规范路径，value 为 note |
-| `note.text` | 必填，1～2000 个 Unicode code point 且至少含一个非空白字符 |
-| `note.style` | 可选：`default`、`important`、`focus`、`core`、`stable`、`extension` |
+| `version` | 必填；新写入固定为整数 `2`，读取兼容整数 `1` |
+| `notes` | 必填对象；v2 为嵌套树，v1 为完整路径到备注对象的映射 |
+| 字符串节点 / `_text` | 备注文本，1～2000 个 Unicode code point 且至少含一个非空白字符 |
+| `_meta` | 可选对象，保存样式及全部扩展备注字段；必须同时存在 `_text`，禁止内部再次出现 `text` |
+| `_meta.style` | 可选：`default`、`important`、`focus`、`core`、`stable`、`extension` |
+
+v2 节点规则：
+
+- 只有文本且没有已备注后代的节点直接用字符串，文件与目录都适用。
+- 有子节点或扩展元数据时使用对象，自身备注在 `_text`；只有子节点而无自身备注时省略 `_text`。
+- `notes._text` / `notes._meta` 表示根目录备注（运行态 key 为 `.`）。
+- 子项 key 是单个文件名段，不允许 `/`、反斜杠、空名、`.`、`..` 或控制字符；展开后的完整路径还必须通过第 3 节校验。
+- 所有以 `_` 开头的真实文件名段写入时额外加一个 `_`，读取时仅对子项中以 `__` 开头的 key 去掉第一个 `_`。例如 `_text` → `__text`、`__text` → `___text`、`__proto__` → `___proto__`。未知单下划线保留字段必须报错。
+- `_meta` 内部是原样 JSON 元数据，不做文件名转义。运行态备注对象为 `{ ...metadata, text }`。
+- 不从对象/字符串形状推断文件系统类型；没有已备注后代的空目录可以保存为字符串，带样式的文件可以保存为对象。缺失路径无须访问文件系统即可转换。
+- 空对象只表示无备注结构，读取时不创建虚假备注；写入时裁剪没有有效备注后代的空枝。
+
+v1 仍按原规则读取，例如 `{"version":1,"notes":{"src/a.ts":{"text":"入口","style":"core"}}}`。不能通过 `text` 或 `_text` 等文件名猜测版本。
 
 `style` 是代码地图语义，不表示错误、警告或运行状态：
 
@@ -73,9 +91,9 @@ v1 的约束刻意保持简单：
 | `stable` | 绿色 | 唯一事实来源或可靠基准 |
 | `extension` | 紫色 | 新增能力的接入位置 |
 
-`tags` 不属于 v1 公共模型。v1 搜索只消费 path 和 text；需要标签时再通过小版本正式加入。
+`tags` 不属于公共模型。搜索只消费展开后的 path 和 text。
 
-未知顶层字段和 note 字段允许存在。适配器写回时必须保留其 JSON 语义值；number 统一按 IEEE-754 binary64 解释，不保证原字面量。需要精确保存的大整数、十进制数或标识符必须使用字符串。
+未知顶层字段和备注字段允许存在。v1 未知备注字段迁移到 v2 的 `_meta` 中，显式 `style: "default"` 也必须保留。适配器写回时必须保留其 JSON 语义值；number 统一按 IEEE-754 binary64 解释，不保证原字面量。需要精确保存的大整数、十进制数或标识符必须使用字符串。
 
 ### 2.2 JSON 解析
 
@@ -91,12 +109,19 @@ v1 的约束刻意保持简单：
 
 加载顺序固定：
 
-1. 解析 JSON object，只检查 `version`。
-2. `version === 1`：用 v1 Schema 和运行时规则完整校验。
-3. `version > 1`：进入只读模式并显示版本诊断，不假设未来 `notes` 仍符合 v1，也不展示或迁移其内容。
-4. `version` 缺失、不是整数或小于 1：报告损坏，禁止写入。
+1. 解析严格 JSON object，只检查 `version`。
+2. `version === 1`：用 v1 Schema 和运行时规则完整校验，保留旧字段含义。
+3. `version === 2`：用 v2 Schema 和运行时规则完整校验，将目录树展开为标准化扁平索引。
+4. `version > 2`：进入只读模式并显示版本诊断，不假设未来 `notes` 符合任何已知格式，也不展示或迁移其内容。
+5. `version` 缺失、不是整数或小于 1：报告损坏，禁止写入。
 
-高版本判断不能先经过 `version: { "const": 1 }` 的 v1 Schema。
+高版本判断不能先经过已知版本 Schema。仅支持 v1 的旧客户端会将 v2 作为未来版本只读处理。
+
+### 2.4 自动迁移
+
+加载、watcher、搜索与展示只读，不因打开项目改写 v1 文件。下一次成功的备注保存（包括内容相同的保存），或写入入口复用已有 v1 配置时，必须在原有锁内重新读取、合并后写为 v2。已是 v2 且内容无变化时不写入。
+
+迁移必须保留文本（含图标和空白）、样式、全部扩展字段、根备注、缺失路径及大小写/Unicode 拼写。失败、冲突、未保存的本端 Document、symlink 或未来版本不得触发迁移。两端可使用迁移前快照继续参与标准化索引的三方合并，迁移必须幂等。
 
 ## 3. 路径规范
 
@@ -167,7 +192,7 @@ ConfigSnapshot
 ├── uri
 ├── rawDigest
 ├── parsedRoot
-├── versionMode        # writable-v1 | readonly-future | invalid
+├── versionMode        # writable | readonly-future | invalid
 ├── notesByExactKey
 ├── filesystemCaseMode
 └── diagnostics
@@ -192,7 +217,7 @@ ConfigSnapshot
 
 写入前必须满足：
 
-- 配置是合法 v1。
+- 配置是合法 v1 或 v2。
 - 当前边界根允许写入。
 - `.codebase-notes.json` 没有未保存的本端编辑器 Document。
 - 配置不是符号链接，底层存储支持 exclusive create 与原子替换。
@@ -245,8 +270,8 @@ Node 与 JVM 没有简单、可移植且语义一致的 OS advisory lock。v1 �
 
 - UTF-8 无 BOM、LF、2 空格缩进、文件结尾一个换行。
 - 根字段顺序：`$schema`（若有）、`version`、`notes`、其他字段。
-- note 字段顺序：`text`、`style`、其他字段。
-- `notes` 和其他 object key 用 3.3 的 comparator 排序；array 顺序保持不变。
+- 统一写为 v2；树节点字段顺序：`_text`、`_meta`、子节点；`_meta` 内 `style` 优先，其余字段排序。
+- 子节点和其他 object key 用 3.3 的 comparator 排序（包括数字形文件名和元数据 key，禁止受 JavaScript 整数 key 枚举顺序影响）；array 顺序保持不变。空对象/数组分别写为 `{}` / `[]`。
 - 未知字段保留 JSON 语义值；number 可以规范化，不保留原 token。
 
 ### 6.5 原子替换
@@ -266,7 +291,7 @@ watcher 收到自身写入事件时通过 digest 合并刷新，不能触发重�
 
 `.codebase-notes.json` 可以提交到 Git，但“可提交”不等于“永不冲突”：
 
-- 稳定排序和一条 note 一个 object 会降低不同 key 修改的 diff 噪声。
+- 稳定排序和按目录分组的树形结构会降低不同路径修改的 diff 噪声。
 - 不同 key 的分支修改通常可由 Git 自动合并，但不作协议保证。
 - 同一 key 被多人修改时必须人工选择或合并。
 - 冲突标记会让 JSON 非法；适配器进入 `CBN001_INVALID_CONFIG`，绝不覆盖文件。
@@ -278,7 +303,7 @@ v1 不提供 `union` merge driver。文本 union 可能制造重复 key 或非�
 
 - 新增与编辑共用一个命令；输入框初值为现有 text。
 - 用户取消不写文件；纯空白输入报校验错误。
-- 删除仅在 note 存在时出现，执行后删除整个 note object。
+- 删除仅在 note 存在时出现，执行后仅移除目标自身备注与元数据；必须保留其后代备注，最后一条后代删除后裁剪空结构。
 - 单次编辑只处理一个路径；批量前缀 Relink 是路径恢复操作，不是批量改正文。
 - 搜索域固定为 note key 和 `text`，使用不区分大小写的子串匹配；结果按规范 key 排序。
 - 完整 `text` 保存在配置中；树上把换行折叠为空格并按平台截断，tooltip/详情视图展示全文。
@@ -290,7 +315,7 @@ JetBrains 使用 Project View location string。VS Code Explorer 使用主题色
 
 ### 9.1 IDE 内同一边界根移动
 
-文件迁移把 `notes[old]` 迁到 `notes[new]`。目录迁移匹配：
+文件迁移在内部扁平索引中把 `notes[old]` 迁到 `notes[new]`，携带完整文本、样式与扩展字段，最后统一编码为树。目录迁移匹配：
 
 ```text
 key == oldPrefix || key.startsWith(oldPrefix + "/")
@@ -348,5 +373,7 @@ spec/conformance/
 ```
 
 每个 fixture 有稳定 `id`、输入、文件系统 case mode、期望输出或 error code。两端 runner 必须逐个报告 fixture id。
+
+`tree-parse.json`、`tree-roundtrip.json` 与 `serialize-config.json` 还必须覆盖 v2 节点与非法结构、元数据、转义文件名、根备注、空目录备注、缺失路径、原型敏感键、数字形 key 排序，以及 v1 → v2 → 备注索引的无损往返。两端仓库测试另行验证迁移幂等、并发与失败原字节不变。
 
 `parse-config.json` 至少包含 duplicate key、BOM、尾逗号、超出 safe integer、指数、负零和 future version。超出 safe integer 的期望是拒绝，不再要求两端实现 lossless number token。

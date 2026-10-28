@@ -35,10 +35,12 @@ fun noteWithStyle(existing: ObjectNode, style: NoteStyle): ObjectNode =
 data class ConfigDocument(
     val root: ObjectNode,
     val notes: ObjectNode,
-)
+) {
+    val version: Int get() = root.path("version").intValue()
+}
 
 sealed interface ParseResult {
-    data class WritableV1(val document: ConfigDocument) : ParseResult
+    data class Writable(val document: ConfigDocument) : ParseResult
     data class ReadonlyFuture(val version: Long) : ParseResult
     data class Invalid(val message: String) : ParseResult
 }

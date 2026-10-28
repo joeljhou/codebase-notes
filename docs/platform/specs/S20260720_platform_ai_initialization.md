@@ -1,9 +1,9 @@
 # 使用 AI 初始化 Codebase Notes
 
 > 状态：已完成
-> 最后更新：2026-07-20
-> 适用范围：Codebase Notes v1、VS Code、TRAE、JetBrains IDE
-> 关联文档：[Codebase Notes v1 协议规范](S20260717_platform_codebase_notes_protocol.md)
+> 最后更新：2026-10-27
+> 适用范围：Codebase Notes v2（兼容旧 v1）、VS Code、TRAE、JetBrains IDE
+> 关联文档：[Codebase Notes 配置协议](S20260717_platform_codebase_notes_protocol.md)
 
 把本文完整交给能够读取项目文件的 AI，即可让它创建或更新仓库根目录的 `.codebase-notes.json`。
 
@@ -188,23 +188,28 @@ API 权威契约
 
 ```json
 {
-  "version": 1,
+  "version": 2,
   "notes": {
-    ".": {
-      "text": "项目整体定位",
-      "style": "important"
+    "_text": "项目整体定位",
+    "_meta": { "style": "important" },
+    "openapi": {
+      "api.yaml": {
+        "_text": "API 权威契约",
+        "_meta": { "style": "stable" }
+      }
     },
-    "src/main.ts": {
-      "text": "服务主入口",
-      "style": "core"
-    },
-    "openapi/api.yaml": {
-      "text": "API 权威契约",
-      "style": "stable"
-    },
-    "src/handlers/registry.ts": {
-      "text": "新增 Handler 注册",
-      "style": "extension"
+    "src": {
+      "handlers": {
+        "registry.ts": {
+          "_text": "新增 Handler 注册",
+          "_meta": { "style": "extension" }
+        }
+      },
+      "main.ts": {
+        "_text": "服务主入口",
+        "_meta": { "style": "core" }
+      },
+      "utils.ts": "通用工具"
     }
   }
 }
@@ -212,26 +217,29 @@ API 权威契约
 
 格式要求：
 
-- `version` 必须是整数 `1`。
-- `notes` 必须是对象。
-- 项目根路径使用 `.`。
-- 其他 key 使用大小写精确的仓库根相对路径，以 `/` 分隔。
-- 只允许备注当前确实存在的文件或目录。
-- 禁止绝对路径、反斜杠、重复 `/`、末尾 `/`、`.` 或 `..` 路径段。
+- `version` 必须是整数 `2`。
+- `notes` 必须是对象，使用嵌套目录树，不能继续写扁平完整路径。
+- 项目根目录备注使用 `notes._text`，根备注元数据放 `notes._meta`；`.` 只用于运行态或旧 v1 配置。
+- 子项 key 为大小写精确的单个路径段；以 `_` 开头的真实段名额外加一个 `_`（如 `_text` → `__text`），元数据内部不转义。
+- 普通叶子备注使用字符串；同时有子项的目录或含样式/扩展字段的节点用对象，自身正文放 `_text`。
+- 只允许为当前确实存在的文件或目录新增备注；更新时不要因路径缺失而丢弃已有用户备注。
+- 禁止绝对路径、反斜杠、包含 `/` 的子项 key、空 key、`.` 或 `..` 路径段。
 - 禁止为 `.codebase-notes.json` 自身添加备注。
-- 每条必须有非空 `text`。
-- 默认样式应省略 `style`。
+- 每条备注必须有非空字符串正文；`_meta` 必须与 `_text` 同时存在且不能包含 `text`。
+- 样式放在 `_meta.style`，默认样式应省略；没有扩展字段时省略 `_meta`。
 - 不添加 `tags`。
 - 不添加注释、尾逗号或重复 key。
 - 使用 UTF-8、两个空格缩进、LF 换行和一个结尾换行。
-- note key 按稳定字典序排列。
+- 树节点按 `_text`、`_meta`、子项顺序排列；`_meta` 内 `style` 优先，其他 key 按 Unicode scalar 值排序。
 - 只有项目已经存在有效 Schema 引用时才保留 `$schema`，不要凭空添加无效地址。
 
 ## 9. 更新已有配置
 
 如果 `.codebase-notes.json` 已存在：
 
+- 先检查版本：v1 按完整路径备注对象读取，合并后转成 v2；v2 先展开为完整路径索引再合并。高于 2 的未来版本只读，不能猜测或改写。
 - 合并更新，不要直接覆盖用户写的有价值备注。
+- 将旧版备注除 `text` 外的所有属性无损放入 `_meta`，保留未知根字段、显式 default 样式和缺失路径备注。不要把原备注中的未知字段误当成子文件名。
 - 保留不理解的额外字段。
 - 修正已经被代码证明确认过时的备注。
 - 不确定是否过时的备注继续保留。
@@ -243,8 +251,8 @@ API 权威契约
 
 1. 使用严格 JSON 解析器验证文件。
 2. 检查每个路径真实存在且大小写准确。
-3. 检查所有 `text` 非空且不超过 24 个 Unicode 字符。
-4. 检查 `style` 只使用本文定义的六个值。
+3. 检查所有字符串备注与 `_text` 非空且不超过 24 个 Unicode 字符。
+4. 检查 `_meta.style` 只使用本文定义的六个值。
 5. 检查 `core` 数量不超过全部备注的 10%。
 6. 检查每条彩色备注的文字能够解释其颜色。
 7. 检查没有秘密、Token、Cookie、私有地址或个人信息。

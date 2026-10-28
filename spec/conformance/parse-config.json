@@ -7,7 +7,7 @@
         "text": "{\"version\":1,\"notes\":{}}"
       },
       "expected": {
-        "mode": "writable-v1"
+        "mode": "writable"
       }
     },
     {
@@ -16,7 +16,7 @@
         "text": "{\"version\":1,\"notes\":{\"a\":{\"text\":\"A\",\"style\":\"default\"},\"b\":{\"text\":\"B\",\"style\":\"important\"},\"c\":{\"text\":\"C\",\"style\":\"focus\"},\"d\":{\"text\":\"D\",\"style\":\"core\"},\"e\":{\"text\":\"E\",\"style\":\"stable\"},\"f\":{\"text\":\"F\",\"style\":\"extension\"}}}"
       },
       "expected": {
-        "mode": "writable-v1"
+        "mode": "writable"
       }
     },
     {
@@ -35,13 +35,13 @@
         "text": "\ufeff{\"version\":1,\"notes\":{}}"
       },
       "expected": {
-        "mode": "writable-v1"
+        "mode": "writable"
       }
     },
     {
       "id": "parse/future-version",
       "input": {
-        "text": "{\"version\":2,\"futureShape\":true}"
+        "text": "{\"version\":3,\"futureShape\":true}"
       },
       "expected": {
         "mode": "readonly-future",
@@ -84,7 +84,7 @@
         "text": "{\"version\":1,\"notes\":{},\"future\":-0}"
       },
       "expected": {
-        "mode": "writable-v1"
+        "mode": "writable"
       }
     },
     {
@@ -93,7 +93,7 @@
         "text": "{\"version\":1,\"notes\":{},\"future\":1e2}"
       },
       "expected": {
-        "mode": "writable-v1"
+        "mode": "writable"
       }
     },
     {

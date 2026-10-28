@@ -10,7 +10,8 @@ object DefaultCoreLocalizer : CoreLocalizer {
     private val messages = mapOf(
         "config.root.object" to "The configuration root must be an object",
         "config.version.safeInteger" to "version must be a safe integer",
-        "config.version.onlyOne" to "Only version=1 is supported",
+        "config.version.supported" to "Only version=1 or version=2 is supported",
+        "tree.invalid" to "Invalid tree node: {0}",
         "json.parse.failed" to "Failed to parse JSON",
         "notes.object" to "notes must be an object",
         "path.key.invalid" to "Invalid path key: {0}",
@@ -23,7 +24,7 @@ object DefaultCoreLocalizer : CoreLocalizer {
         "config.read.failed" to "Could not read the configuration: {0}",
         "config.version.unsupported" to "Configuration version {0} is not supported",
         "config.deleted" to "The configuration file was deleted",
-        "config.write.invalid" to "Refusing to write a configuration that does not conform to v1",
+        "config.write.invalid" to "Refusing to write a configuration that does not conform to the configuration format",
         "config.write.failed" to "Could not write the configuration",
         "config.symlink" to "The configuration file is a symbolic link and cannot be atomically replaced",
         "config.atomic.unsupported" to "The current file system does not support atomic replacement",

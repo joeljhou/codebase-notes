@@ -4,7 +4,7 @@ object PathPolicy {
     private val drivePrefix = Regex("^[A-Za-z]:/")
     private val controlCharacter = Regex("[\\u0000-\\u001F\\u007F]")
 
-    fun isValidKey(key: String): Boolean {
+    fun isValidKey(key: String, structural: Boolean = false): Boolean {
         if (key == ".") return true
         if (
             key.isEmpty() || key.startsWith('/') || key.endsWith('/') ||
@@ -16,7 +16,7 @@ object PathPolicy {
 
         val segments = key.split('/')
         return segments.none { it == "." || it == ".." } &&
-            segments.last() != CONFIG_FILE_NAME
+            (structural || segments.last() != CONFIG_FILE_NAME)
     }
 
     fun isWithinPrefix(key: String, prefix: String): Boolean =

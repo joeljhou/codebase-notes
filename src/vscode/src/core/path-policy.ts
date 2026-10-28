@@ -14,7 +14,7 @@ export class PathPolicyError extends Error {
   }
 }
 
-export function isValidNoteKey(key: string): boolean {
+export function isValidNoteKey(key: string, structural = false): boolean {
   if (key === ".") {
     return true;
   }
@@ -30,12 +30,11 @@ export function isValidNoteKey(key: string): boolean {
     return false;
   }
   const segments = key.split("/");
-  return segments.every(
-    (segment) =>
-      segment.length > 0 &&
-      segment !== "." &&
-      segment !== ".." &&
-      segment !== ".codebase-notes.json",
+  return (
+    (structural || segments.at(-1) !== ".codebase-notes.json") &&
+    segments.every(
+      (segment) => segment.length > 0 && segment !== "." && segment !== "..",
+    )
   );
 }
 

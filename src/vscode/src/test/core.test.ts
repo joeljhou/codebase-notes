@@ -11,7 +11,7 @@ import {
 } from "../core/path-policy.js";
 import { searchNotes } from "../core/search.js";
 import { stableSerialize } from "../core/serializer.js";
-import type { ConfigV1 } from "../core/types.js";
+import type { ConfigDocument } from "../core/types.js";
 import { createParser } from "./helpers.js";
 
 const parser = createParser();
@@ -25,7 +25,7 @@ test("稳定序列化会保留未知字段并规范字段顺序", () => {
     },
     version: 1,
     $schema: "./spec/codebase-notes.schema.json",
-  } as ConfigV1;
+  } as ConfigDocument;
 
   const serialized = stableSerialize(config);
   assert.equal(
@@ -33,17 +33,17 @@ test("稳定序列化会保留未知字段并规范字段顺序", () => {
     [
       "{",
       '  "$schema": "./spec/codebase-notes.schema.json",',
-      '  "version": 1,',
+      '  "version": 2,',
       '  "notes": {',
-      '    "a.ts": {',
-      '      "text": "A"',
-      "    },",
+      '    "a.ts": "A",',
       '    "中.ts": {',
-      '      "text": "中文",',
-      '      "style": "important",',
-      '      "future": {',
-      '        "a": 1,',
-      '        "z": 2',
+      '      "_text": "中文",',
+      '      "_meta": {',
+      '        "style": "important",',
+      '        "future": {',
+      '          "a": 1,',
+      '          "z": 2',
+      "        }",
       "      }",
       "    }",
       "  },",
@@ -56,7 +56,7 @@ test("稳定序列化会保留未知字段并规范字段顺序", () => {
     ].join("\n"),
   );
   const reparsed = parser.parse(serialized);
-  assert.equal(reparsed.mode, "writable-v1");
+  assert.equal(reparsed.mode, "writable");
 });
 
 test("大小写不敏感路径使用磁盘目录项的真实大小写", async () => {

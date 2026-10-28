@@ -18,8 +18,9 @@ export interface Note extends JsonObject {
   style?: NoteStyle;
 }
 
-export interface ConfigV1 extends JsonObject {
-  version: 1;
+// Runtime notes stay flat; version records the source disk format.
+export interface ConfigDocument extends JsonObject {
+  version: 1 | 2;
   notes: Record<string, Note>;
   $schema?: string;
 }
@@ -35,8 +36,8 @@ export type DiagnosticCode =
   | "CBN008_LOCKFILE_TRACKED";
 
 export interface WritableConfig {
-  mode: "writable-v1";
-  config: ConfigV1;
+  mode: "writable";
+  config: ConfigDocument;
 }
 
 export interface FutureConfig {

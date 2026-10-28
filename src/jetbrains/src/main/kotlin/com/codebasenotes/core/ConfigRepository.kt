@@ -20,7 +20,7 @@ class ConfigRepository(
         }
 
         return when (val parsed = ConfigParser.parse(bytes, localizer)) {
-            is ParseResult.WritableV1 -> LoadResult.Loaded(
+            is ParseResult.Writable -> LoadResult.Loaded(
                 ConfigSnapshot(configPath, parsed.document, bytes),
             )
             is ParseResult.ReadonlyFuture -> LoadResult.ReadonlyFuture(parsed.version)
@@ -31,14 +31,18 @@ class ConfigRepository(
     fun create(configPath: Path): CommitResult = safely {
         fileStore.withLock(configPath) {
             when (val current = load(configPath)) {
-                is LoadResult.Loaded -> CommitResult.NoChange(current.snapshot)
+                is LoadResult.Loaded -> if (current.snapshot.document.version == 2) {
+                    CommitResult.NoChange(current.snapshot)
+                } else {
+                    write(configPath, current.snapshot.document)
+                }
                 is LoadResult.ReadonlyFuture -> CommitResult.Readonly(
                     localizer.message("config.version.unsupported", current.version),
                 )
                 is LoadResult.Invalid -> CommitResult.Failed(current.message)
                 LoadResult.Missing -> {
                     val root = ConfigParser.mapper.createObjectNode().apply {
-                        put("version", 1)
+                        put("version", 2)
                         set<ObjectNode>("notes", ConfigParser.mapper.createObjectNode())
                     }
                     write(configPath, ConfigDocument(root, root.withObject("notes")))
@@ -60,7 +64,7 @@ class ConfigRepository(
                     when (merged) {
                         is MergeResult.Conflict -> CommitResult.Conflict(merged.paths)
                         is MergeResult.Merged -> {
-                            if (merged.notes == disk.snapshot.document.notes) {
+                            if (disk.snapshot.document.version == 2 && merged.notes == disk.snapshot.document.notes) {
                                 CommitResult.NoChange(disk.snapshot)
                             } else {
                                 // 未被本次操作触及的根字段，以锁内刚读到的磁盘版本为准。
@@ -98,11 +102,12 @@ class ConfigRepository(
     private fun write(path: Path, document: ConfigDocument): CommitResult.Committed {
         val bytes = ConfigSerializer.serialize(document)
         // Repository 是所有写入口的最后一道边界，不能依赖 Action 或未来调用者永远传合法对象。
-        check(ConfigParser.parse(bytes, localizer) is ParseResult.WritableV1) {
+        val validation = ConfigParser.parse(bytes, localizer)
+        check(validation is ParseResult.Writable) {
             localizer.message("config.write.invalid")
         }
         fileStore.atomicReplace(path, bytes)
-        return CommitResult.Committed(ConfigSnapshot(path, document, bytes))
+        return CommitResult.Committed(ConfigSnapshot(path, validation.document, bytes))
     }
 
     private inline fun safely(action: () -> CommitResult): CommitResult = try {

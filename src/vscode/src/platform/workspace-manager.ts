@@ -1,3 +1,4 @@
+import { ownValue } from "../core/json.js";
 import path from "node:path";
 import * as vscode from "vscode";
 import {
@@ -84,7 +85,7 @@ export class WorkspaceNotesState {
   }
 
   noteForKey(key: string): Note | undefined {
-    return this.snapshot?.config.notes[key];
+    return this.snapshot === undefined ? undefined : ownValue(this.snapshot.config.notes, key);
   }
 
   isConfigDocumentDirty(): boolean {

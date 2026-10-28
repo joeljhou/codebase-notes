@@ -1,28 +1,26 @@
 import Ajv2020, { type ErrorObject, type ValidateFunction } from "ajv/dist/2020.js";
 import addFormats from "ajv-formats";
 import {
-  parse,
+  parseTree,
   printParseErrorCode,
   visit,
   type ParseError,
 } from "jsonc-parser";
 import type {
   ConfigLoadResult,
-  ConfigV1,
+  ConfigDocument,
   JsonObject,
   JsonValue,
 } from "./types.js";
 import { defaultLocalize, type Localize } from "./localize.js";
+import { decodeTree } from "./tree-codec.js";
+import { isJsonObject } from "./json.js";
 
 const PARSE_OPTIONS = {
   allowEmptyContent: false,
   allowTrailingComma: false,
   disallowComments: true,
 } as const;
-
-function isJsonObject(value: unknown): value is JsonObject {
-  return typeof value === "object" && value !== null && !Array.isArray(value);
-}
 
 function formatSchemaError(error: ErrorObject, localize: Localize): string {
   const location = error.instancePath.length === 0 ? "/" : error.instancePath;
@@ -97,15 +95,15 @@ function validateNumbers(
 }
 
 export class ConfigParser {
-  readonly #validateV1: ValidateFunction;
+  readonly #validate: ValidateFunction;
 
   constructor(
     schema: object,
     readonly localize: Localize = defaultLocalize,
   ) {
-    const ajv = new Ajv2020({ allErrors: true, strict: true });
+    const ajv = new Ajv2020({ allErrors: true, strict: true, ownProperties: true });
     addFormats(ajv);
-    this.#validateV1 = ajv.compile(schema);
+    this.#validate = ajv.compile(schema);
   }
 
   parse(input: string | Uint8Array): ConfigLoadResult {
@@ -113,7 +111,7 @@ export class ConfigParser {
       typeof input === "string" ? input : Buffer.from(input).toString("utf8");
     const text = decoded.startsWith("\uFEFF") ? decoded.slice(1) : decoded;
     const errors: ParseError[] = [];
-    const value: unknown = parse(text, errors, PARSE_OPTIONS);
+    parseTree(text, errors, PARSE_OPTIONS);
 
     if (errors.length > 0) {
       const first = errors[0];
@@ -140,6 +138,18 @@ export class ConfigParser {
       };
     }
 
+    // JSON.parse defines own properties safely (including __proto__) and keeps
+    // the same object prototypes as notes constructed by the UI and API callers.
+    let value: unknown;
+    try {
+      value = JSON.parse(text);
+    } catch (error) {
+      return {
+        mode: "invalid",
+        code: "CBN001_INVALID_CONFIG",
+        message: (error as Error).message,
+      };
+    }
     if (!isJsonObject(value)) {
       return {
         mode: "invalid",
@@ -161,8 +171,8 @@ export class ConfigParser {
       };
     }
 
-    // 高版本只判断 version，不拿 v1 Schema 猜测未来数据结构。
-    if (version > 1) {
+    // 未来版本只判断 version，不猜测尚未支持的数据结构。
+    if (version > 2) {
       return {
         mode: "readonly-future",
         code: "CBN002_FUTURE_VERSION",
@@ -170,11 +180,11 @@ export class ConfigParser {
       };
     }
 
-    if (!this.#validateV1(value)) {
+    if (!this.#validate(value)) {
       return {
         mode: "invalid",
         code: "CBN001_INVALID_CONFIG",
-        message: (this.#validateV1.errors ?? [])
+        message: (this.#validate.errors ?? [])
           .map((error) => formatSchemaError(error, this.localize))
           .join("; "),
       };
@@ -189,9 +199,20 @@ export class ConfigParser {
       };
     }
 
-    return {
-      mode: "writable-v1",
-      config: value as ConfigV1,
-    };
+    try {
+      const config = value as ConfigDocument;
+      return {
+        mode: "writable",
+        config: version === 2
+          ? { ...config, notes: decodeTree(value.notes as JsonObject) }
+          : config,
+      };
+    } catch (error) {
+      return {
+        mode: "invalid",
+        code: "CBN001_INVALID_CONFIG",
+        message: (error as Error).message,
+      };
+    }
   }
 }

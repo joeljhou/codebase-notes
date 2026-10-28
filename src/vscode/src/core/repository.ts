@@ -1,6 +1,7 @@
 import { createHash } from "node:crypto";
 import { readFile } from "node:fs/promises";
 import { isDeepStrictEqual } from "node:util";
+import { ownValue, setOwn } from "./json.js";
 import { AtomicFileStore, FileStoreError } from "./file-store.js";
 import { mergeNotes, type NoteIntent } from "./merge.js";
 import { applyMove, planMove } from "./move.js";
@@ -8,7 +9,7 @@ import { ConfigParser } from "./parser.js";
 import { stableSerialize } from "./serializer.js";
 import type {
   ConfigLoadResult,
-  ConfigV1,
+  ConfigDocument,
   DiagnosticCode,
   Note,
 } from "./types.js";
@@ -17,13 +18,13 @@ import type { Localize } from "./localize.js";
 export interface ConfigSnapshot {
   configPath: string;
   rawDigest: string;
-  config: ConfigV1;
+  config: ConfigDocument;
 }
 
 export type LoadResult =
   | { kind: "loaded"; snapshot: ConfigSnapshot }
   | { kind: "missing" }
-  | { kind: "diagnostic"; result: Exclude<ConfigLoadResult, { mode: "writable-v1" }> };
+  | { kind: "diagnostic"; result: Exclude<ConfigLoadResult, { mode: "writable" }> };
 
 export type OperationResult =
   | { kind: "committed"; snapshot: ConfigSnapshot }
@@ -38,7 +39,7 @@ function digest(bytes: Uint8Array): string {
 function makeSnapshot(
   configPath: string,
   bytes: Uint8Array,
-  config: ConfigV1,
+  config: ConfigDocument,
 ): ConfigSnapshot {
   return { configPath, rawDigest: digest(bytes), config };
 }
@@ -81,7 +82,7 @@ export class ConfigRepository {
     }
 
     const parsed = this.parser.parse(bytes);
-    if (parsed.mode !== "writable-v1") {
+    if (parsed.mode !== "writable") {
       return { kind: "diagnostic", result: parsed };
     }
     return {
@@ -95,7 +96,10 @@ export class ConfigRepository {
       return await this.fileStore.withLock(configPath, async () => {
         const existing = await this.load(configPath);
         if (existing.kind === "loaded") {
-          return { kind: "no-change", snapshot: existing.snapshot };
+          if (existing.snapshot.config.version === 2) {
+            return { kind: "no-change", snapshot: existing.snapshot };
+          }
+          return this.#write(configPath, existing.snapshot.config);
         }
         if (existing.kind === "diagnostic") {
           return {
@@ -111,13 +115,8 @@ export class ConfigRepository {
           };
         }
 
-        const config: ConfigV1 = { version: 1, notes: {} };
-        const bytes = Buffer.from(stableSerialize(config), "utf8");
-        await this.fileStore.atomicReplace(configPath, bytes);
-        return {
-          kind: "committed",
-          snapshot: makeSnapshot(configPath, bytes, config),
-        };
+        const config: ConfigDocument = { version: 2, notes: {} };
+        return this.#write(configPath, config);
       });
     } catch (error) {
       return this.#failure(error);
@@ -164,36 +163,20 @@ export class ConfigRepository {
             paths: merged.paths,
           };
         }
-        if (isDeepStrictEqual(merged.notes, disk.snapshot.config.notes)) {
+        if (
+          disk.snapshot.config.version === 2 &&
+          isDeepStrictEqual(merged.notes, disk.snapshot.config.notes)
+        ) {
           return { kind: "no-change", snapshot: disk.snapshot };
         }
 
         // 未 touched 的根字段始终以锁内最新磁盘版本为准。
-        const config: ConfigV1 = {
+        const config: ConfigDocument = {
           ...disk.snapshot.config,
+          version: 2,
           notes: merged.notes,
         };
-        const bytes = Buffer.from(stableSerialize(config), "utf8");
-        // Repository 是所有写入口的最后一道边界，不能假设 UI 或第三方 API 调用者已校验。
-        const validation = this.parser.parse(bytes);
-        if (validation.mode !== "writable-v1") {
-          return {
-            kind: "failed",
-            code: validation.code,
-            message:
-              validation.mode === "invalid"
-                ? validation.message
-                : this.localize(
-                    "Configuration version {0} is not supported",
-                    validation.version,
-                  ),
-          };
-        }
-        await this.fileStore.atomicReplace(base.configPath, bytes);
-        return {
-          kind: "committed",
-          snapshot: makeSnapshot(base.configPath, bytes, config),
-        };
+        return this.#write(base.configPath, config);
       });
     } catch (error) {
       return this.#failure(error);
@@ -238,11 +221,35 @@ export class ConfigRepository {
       ...Object.keys(moved),
     ]);
     for (const key of keys) {
-      if (!isDeepStrictEqual(base.config.notes[key], moved[key])) {
-        intent[key] = moved[key] ?? null;
+      if (!isDeepStrictEqual(ownValue(base.config.notes, key), ownValue(moved, key))) {
+        setOwn(intent, key, ownValue(moved, key) ?? null);
       }
     }
     return this.commit(base, intent);
+  }
+
+  async #write(configPath: string, config: ConfigDocument): Promise<OperationResult> {
+    const bytes = Buffer.from(stableSerialize(config), "utf8");
+    // Repository 是所有写入口的最后一道边界，不能假设 UI 或第三方 API 调用者已校验。
+    const validation = this.parser.parse(bytes);
+    if (validation.mode !== "writable") {
+      return {
+        kind: "failed",
+        code: validation.code,
+        message:
+          validation.mode === "invalid"
+            ? validation.message
+            : this.localize(
+                "Configuration version {0} is not supported",
+                validation.version,
+              ),
+      };
+    }
+    await this.fileStore.atomicReplace(configPath, bytes);
+    return {
+      kind: "committed",
+      snapshot: makeSnapshot(configPath, bytes, validation.config),
+    };
   }
 
   #failure(error: unknown): OperationResult {

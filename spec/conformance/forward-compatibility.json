@@ -7,7 +7,7 @@
         "text": "{\"version\":1,\"notes\":{\"src/a.ts\":{\"text\":\"A\",\"future\":{\"enabled\":true}}},\"rootFuture\":[1,\"x\"]}"
       },
       "expected": {
-        "mode": "writable-v1"
+        "mode": "writable"
       }
     },
     {

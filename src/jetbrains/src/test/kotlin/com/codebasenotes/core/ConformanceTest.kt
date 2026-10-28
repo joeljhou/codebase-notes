@@ -6,6 +6,7 @@ import org.junit.jupiter.api.DynamicTest
 import org.junit.jupiter.api.TestFactory
 import java.nio.file.Files
 import java.nio.file.Path
+import kotlin.test.assertIs
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
@@ -62,6 +63,21 @@ class ConformanceTest {
                     ConfigSerializer.serialize(document).toString(Charsets.UTF_8),
                 )
             }
+            "roundtrip-config" -> {
+                val parsed = assertIs<ParseResult.Writable>(ConfigParser.parse(
+                    ConfigParser.mapper.writeValueAsBytes(input.get("config")),
+                )).document
+                assertEquals(expected.get("notes"), parsed.notes)
+                val serialized = ConfigSerializer.serialize(parsed)
+                val reparsed = assertIs<ParseResult.Writable>(ConfigParser.parse(serialized)).document
+                assertEquals(parsed.notes, reparsed.notes)
+                val expectedRoot = parsed.root.deepCopy().apply {
+                    put("version", 2)
+                    set<ObjectNode>("notes", TreeCodec.encode(parsed.notes))
+                }
+                assertEquals(expectedRoot, reparsed.root)
+                assertEquals(serialized.toString(Charsets.UTF_8), ConfigSerializer.serialize(reparsed).toString(Charsets.UTF_8))
+            }
             "merge" -> assertMerge(input, expected)
             "move" -> assertMove(input, expected)
             else -> error("未知 fixture 操作：$operation")
@@ -70,7 +86,7 @@ class ConformanceTest {
 
     private fun assertParse(text: String, expected: ObjectNode) {
         val actual = when (ConfigParser.parse(text.toByteArray())) {
-            is ParseResult.WritableV1 -> "writable-v1" to null
+            is ParseResult.Writable -> "writable" to null
             is ParseResult.ReadonlyFuture -> "readonly-future" to "CBN002_FUTURE_VERSION"
             is ParseResult.Invalid -> "invalid" to "CBN001_INVALID_CONFIG"
         }

@@ -2,6 +2,7 @@ package com.codebasenotes.core
 
 import com.fasterxml.jackson.core.JsonFactory
 import com.fasterxml.jackson.core.StreamReadFeature
+import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.node.ObjectNode
@@ -12,7 +13,7 @@ object ConfigParser {
         JsonFactory.builder()
             .enable(StreamReadFeature.STRICT_DUPLICATE_DETECTION)
             .build(),
-    )
+    ).enable(DeserializationFeature.FAIL_ON_TRAILING_TOKENS)
 
     private val minSafeInteger = BigInteger.valueOf(-9_007_199_254_740_991L)
     private val maxSafeInteger = BigInteger.valueOf(9_007_199_254_740_991L)
@@ -38,23 +39,23 @@ object ConfigParser {
                 return ParseResult.Invalid(localizer.message("config.version.safeInteger"))
             }
 
-            // 先只识别版本，再决定是否套用 v1 结构；否则未来格式会被旧客户端误判为损坏。
+            // 未来版本只识别 version，不猜测尚未支持的数据结构。
             val versionValue = version.longValue()
-            if (versionValue > 1) return ParseResult.ReadonlyFuture(versionValue)
-            if (versionValue != 1L) return ParseResult.Invalid(localizer.message("config.version.onlyOne"))
+            if (versionValue > 2) return ParseResult.ReadonlyFuture(versionValue)
+            if (versionValue < 1) return ParseResult.Invalid(localizer.message("config.version.supported"))
 
             validateFiniteSafeNumbers(root, localizer)?.let { return ParseResult.Invalid(it) }
-            validateV1(root, localizer)?.let { return ParseResult.Invalid(it) }
-            ParseResult.WritableV1(ConfigDocument(root, root.withObject("notes")))
+            val storedNotes = root.get("notes")
+            if (storedNotes !is ObjectNode) return ParseResult.Invalid(localizer.message("notes.object"))
+            val notes = if (versionValue == 2L) TreeCodec.decode(storedNotes, localizer) else storedNotes
+            validateNotes(notes, localizer)?.let { return ParseResult.Invalid(it) }
+            ParseResult.Writable(ConfigDocument(root, notes))
         } catch (error: Exception) {
             ParseResult.Invalid(error.message ?: localizer.message("json.parse.failed"))
         }
     }
 
-    private fun validateV1(root: ObjectNode, localizer: CoreLocalizer): String? {
-        val notes = root.get("notes")
-        if (notes !is ObjectNode) return localizer.message("notes.object")
-
+    private fun validateNotes(notes: ObjectNode, localizer: CoreLocalizer): String? {
         for ((key, value) in notes.properties()) {
             if (!PathPolicy.isValidKey(key)) return localizer.message("path.key.invalid", key)
             if (value !is ObjectNode) return localizer.message("note.object", key)

@@ -1,3 +1,4 @@
+import { ownValue } from "../core/json.js";
 import { access } from "node:fs/promises";
 import * as vscode from "vscode";
 import { planMove } from "../core/move.js";
@@ -234,7 +235,7 @@ async function editNote(
     await ensureSnapshot(manager, target.state);
     return;
   }
-  const existing = baseSnapshot?.config.notes[target.key];
+  const existing = baseSnapshot === undefined ? undefined : ownValue(baseSnapshot.config.notes, target.key);
   const text = await vscode.window.showInputBox({
     title: vscode.l10n.t("Edit Text Note"),
     value: existing?.text ?? "",
@@ -276,7 +277,7 @@ async function setNoteStyle(
   if (snapshot === undefined) {
     return;
   }
-  const existing = snapshot.config.notes[target.key];
+  const existing = ownValue(snapshot.config.notes, target.key);
   if (existing === undefined) {
     await vscode.window.showInformationMessage(
       vscode.l10n.t("Add a text note before setting its style."),
@@ -385,7 +386,7 @@ async function removeNote(
   ) {
     return;
   }
-  if (target.state.snapshot.config.notes[target.key] === undefined) {
+  if (ownValue(target.state.snapshot.config.notes, target.key) === undefined) {
     return;
   }
   const clear = vscode.l10n.t("Clear");
