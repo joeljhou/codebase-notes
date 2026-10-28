@@ -1,5 +1,10 @@
 # Change Log
 
+## 0.1.28
+
+- 优化 `.codebase-notes.json` 写回格式：叶子备注保持单行，节点自身的 `_text` 与简单 `_meta` 合并一行，仅下级路径和复杂嵌套数据展开。
+- 保持 v2 协议、备注内容与样式不变，同步 VS Code / TRAE、JetBrains 格式及双端一致性与幂等测试。
+
 ## 0.1.27
 
 - VS Code / TRAE 与 JetBrains 统一支持 v2 嵌套目录树配置，普通备注使用字符串，目录自身备注使用 `_text`。

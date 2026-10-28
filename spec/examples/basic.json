@@ -6,17 +6,11 @@
         "kotlin": {
           "com": {
             "example": {
-              "App.kt": {
-                "_text": "应用入口，启动时只做装配",
-                "_meta": { "style": "core" }
-              }
+              "App.kt": { "_text": "应用入口，启动时只做装配", "_meta": { "style": "core" } }
             }
           }
         },
-        "resources": {
-          "_text": "生产环境配置由部署系统覆盖",
-          "_meta": { "style": "focus" }
-        }
+        "resources": { "_text": "生产环境配置由部署系统覆盖", "_meta": { "style": "focus" } }
       }
     }
   }

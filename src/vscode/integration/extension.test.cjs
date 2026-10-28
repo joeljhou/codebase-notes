@@ -268,6 +268,30 @@ describe("Codebase Notes Extension Host", () => {
     assert.equal(JSON.parse(await readFile(state.configPath, "utf8")).notes.src._text, undefined);
   });
 
+  it("保存时压紧叶子备注并合并节点自身的文字与样式", async () => {
+    for (const [key, note] of [
+      [".", { text: "项目说明", style: "core" }],
+      ["src", { text: "源代码", style: "focus" }],
+      ["src/Main.ts", { text: "应用入口\n第二行", style: "important" }],
+    ]) {
+      const result = await state.repository.setNote(state.snapshot, key, note);
+      assert.equal(result.kind, "committed");
+      state.accept(result);
+    }
+    const text = await readFile(state.configPath, "utf8");
+    assert.ok(text.includes('    "_text": "项目说明", "_meta": { "style": "core" },\n'));
+    assert.ok(text.includes('      "_text": "源代码", "_meta": { "style": "focus" },\n'));
+    assert.ok(text.includes('      "Main.ts": { "_text": "应用入口\\n第二行", "_meta": { "style": "important" } }\n'));
+    const stored = JSON.parse(text);
+    assert.equal(stored.notes.src["Main.ts"]._text, "应用入口\n第二行");
+    await state.refresh();
+    assert.equal(state.noteForKey("src/Main.ts").text, "应用入口\n第二行");
+    const repeated = await state.repository.setNote(state.snapshot, ".", state.noteForKey("."));
+    assert.equal(repeated.kind, "no-change");
+    state.accept(repeated);
+    assert.equal(await readFile(state.configPath, "utf8"), text);
+  });
+
   it("配置 Document dirty 状态可被写入前置检查识别", async () => {
     const document = await vscode.workspace.openTextDocument(
       vscode.Uri.file(state.configPath),

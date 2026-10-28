@@ -72,14 +72,14 @@ for (const file of readdirSync(fixturesDirectory).filter((name) =>
           break;
         }
         case "serialize-config": {
-          assert.deepEqual(
-            {
-              text: stableSerialize(
-                fixtureCase.input.config as unknown as ConfigDocument,
-              ),
-            },
-            fixtureCase.expected,
+          const text = stableSerialize(
+            fixtureCase.input.config as unknown as ConfigDocument,
           );
+          assert.deepEqual({ text }, fixtureCase.expected);
+          const reparsed = parser.parse(text);
+          assert.equal(reparsed.mode, "writable");
+          if (reparsed.mode !== "writable") break;
+          assert.equal(stableSerialize(reparsed.config), text);
           break;
         }
         case "roundtrip-config": {

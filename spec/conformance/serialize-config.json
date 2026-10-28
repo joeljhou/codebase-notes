@@ -16,7 +16,7 @@
         }
       },
       "expected": {
-        "text": "{\n  \"$schema\": \"./spec/codebase-notes.schema.json\",\n  \"version\": 2,\n  \"notes\": {\n    \"a.ts\": {\n      \"_text\": \"A\",\n      \"_meta\": {\n        \"style\": \"important\"\n      }\n    },\n    \"😀\": {\n      \"_text\": \"emoji\",\n      \"_meta\": {\n        \"future\": {\n          \"a\": false,\n          \"b\": true\n        }\n      }\n    }\n  },\n  \"a\": 0,\n  \"z\": [\n    1,\n    \"x\"\n  ]\n}\n"
+        "text": "{\n  \"$schema\": \"./spec/codebase-notes.schema.json\",\n  \"version\": 2,\n  \"notes\": {\n    \"a.ts\": { \"_text\": \"A\", \"_meta\": { \"style\": \"important\" } },\n    \"😀\": {\n      \"_text\": \"emoji\",\n      \"_meta\": {\n        \"future\": { \"a\": false, \"b\": true }\n      }\n    }\n  },\n  \"a\": 0,\n  \"z\": [1, \"x\"]\n}\n"
       }
     },
     {
@@ -33,7 +33,103 @@
         }
       },
       "expected": {
-        "text": "{\n  \"version\": 2,\n  \"notes\": {\n    \"10\": {\n      \"_text\": \"ten\",\n      \"_meta\": {\n        \"style\": \"default\",\n        \"10\": [],\n        \"2\": {}\n      }\n    },\n    \"2\": \"two\",\n    \"src\": {\n      \"_text\": \"源代码\",\n      \"__text\": \"特殊文件\"\n    }\n  }\n}\n"
+        "text": "{\n  \"version\": 2,\n  \"notes\": {\n    \"10\": { \"_text\": \"ten\", \"_meta\": { \"style\": \"default\", \"10\": [], \"2\": {} } },\n    \"2\": \"two\",\n    \"src\": {\n      \"_text\": \"源代码\",\n      \"__text\": \"特殊文件\"\n    }\n  }\n}\n"
+      }
+    },
+    {
+      "id": "serialize/compact-note-properties-and-expanded-paths",
+      "input": {
+        "config": {
+          "version": 2,
+          "notes": {
+            ".": {"text": "★ 跨 IDE 代码备注", "style": "core"},
+            "VERSION": {"text": "✧ 双端版本唯一源", "style": "stable"},
+            "README.md": {"text": "安装与开发入口"},
+            "src": {"text": "源代码", "style": "extension"},
+            "src/main.ts": {"text": "程序入口", "style": "important"},
+            "src/utils.ts": {"text": "工具函数"},
+            "docs/README.md": {"text": "文档入口"}
+          }
+        }
+      },
+      "expected": {
+        "text": "{\n  \"version\": 2,\n  \"notes\": {\n    \"_text\": \"★ 跨 IDE 代码备注\", \"_meta\": { \"style\": \"core\" },\n    \"README.md\": \"安装与开发入口\",\n    \"VERSION\": { \"_text\": \"✧ 双端版本唯一源\", \"_meta\": { \"style\": \"stable\" } },\n    \"docs\": {\n      \"README.md\": \"文档入口\"\n    },\n    \"src\": {\n      \"_text\": \"源代码\", \"_meta\": { \"style\": \"extension\" },\n      \"main.ts\": { \"_text\": \"程序入口\", \"_meta\": { \"style\": \"important\" } },\n      \"utils.ts\": \"工具函数\"\n    }\n  }\n}\n"
+      }
+    },
+    {
+      "id": "serialize/root-note-stays-expanded",
+      "input": {
+        "config": {
+          "version": 2,
+          "notes": {
+            ".": {"text": "根目录备注", "style": "core"}
+          }
+        }
+      },
+      "expected": {
+        "text": "{\n  \"version\": 2,\n  \"notes\": {\n    \"_text\": \"根目录备注\", \"_meta\": { \"style\": \"core\" }\n  }\n}\n"
+      }
+    },
+    {
+      "id": "serialize/empty-containers-and-flat-extensions",
+      "input": {
+        "config": {
+          "version": 2,
+          "notes": {},
+          "options": {"enabled": false, "emptyObject": {}, "emptyArray": []},
+          "values": [1, "x", null, true, {}, []]
+        }
+      },
+      "expected": {
+        "text": "{\n  \"version\": 2,\n  \"notes\": {},\n  \"options\": { \"emptyArray\": [], \"emptyObject\": {}, \"enabled\": false },\n  \"values\": [1, \"x\", null, true, {}, []]\n}\n"
+      }
+    },
+    {
+      "id": "serialize/nested-metadata-and-extensions",
+      "input": {
+        "config": {
+          "version": 2,
+          "notes": {
+            "src": {"text": "源代码", "style": "core", "future": {"tags": ["a", "b"], "enabled": true}},
+            "src/main.ts": {"text": "入口", "style": "important"}
+          },
+          "extension": {"_text": "普通扩展字段", "_meta": {"style": "opaque"}},
+          "matrix": [[1, 2], []],
+          "objects": [{"z": 2, "a": 1}]
+        }
+      },
+      "expected": {
+        "text": "{\n  \"version\": 2,\n  \"notes\": {\n    \"src\": {\n      \"_text\": \"源代码\",\n      \"_meta\": {\n        \"style\": \"core\",\n        \"future\": {\n          \"enabled\": true,\n          \"tags\": [\"a\", \"b\"]\n        }\n      },\n      \"main.ts\": { \"_text\": \"入口\", \"_meta\": { \"style\": \"important\" } }\n    }\n  },\n  \"extension\": {\n    \"_meta\": { \"style\": \"opaque\" },\n    \"_text\": \"普通扩展字段\"\n  },\n  \"matrix\": [\n    [1, 2],\n    []\n  ],\n  \"objects\": [\n    { \"a\": 1, \"z\": 2 }\n  ]\n}\n"
+      }
+    },
+    {
+      "id": "serialize/escaped-text-and-reserved-paths",
+      "input": {
+        "config": {
+          "version": 2,
+          "notes": {
+            "__proto__": {"text": "第一行\n第二行 \"引号\" \\ 路径", "style": "focus"},
+            "_meta": {"text": "特殊目录", "style": "stable"},
+            "_meta/child": {"text": "子节点"}
+          }
+        }
+      },
+      "expected": {
+        "text": "{\n  \"version\": 2,\n  \"notes\": {\n    \"___proto__\": { \"_text\": \"第一行\\n第二行 \\\"引号\\\" \\\\ 路径\", \"_meta\": { \"style\": \"focus\" } },\n    \"__meta\": {\n      \"_text\": \"特殊目录\", \"_meta\": { \"style\": \"stable\" },\n      \"child\": \"子节点\"\n    }\n  }\n}\n"
+      }
+    },
+    {
+      "id": "serialize/directory-chains-stay-expanded",
+      "input": {
+        "config": {
+          "version": 2,
+          "notes": {
+            "src/main/kotlin/App.kt": {"text": "应用入口", "style": "core"}
+          }
+        }
+      },
+      "expected": {
+        "text": "{\n  \"version\": 2,\n  \"notes\": {\n    \"src\": {\n      \"main\": {\n        \"kotlin\": {\n          \"App.kt\": { \"_text\": \"应用入口\", \"_meta\": { \"style\": \"core\" } }\n        }\n      }\n    }\n  }\n}\n"
       }
     }
   ]

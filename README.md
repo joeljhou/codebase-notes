@@ -15,10 +15,10 @@
 
 ## 下载与安装
 
-当前版本：`0.1.27`
+当前版本：`0.1.28`
 
-- [JetBrains 插件（ZIP）](https://github.com/joeljhou/codebase-notes/releases/download/v0.1.27/codebase-notes-jetbrains-0.1.27.zip)
-- [VS Code / TRAE 扩展（VSIX）](https://github.com/joeljhou/codebase-notes/releases/download/v0.1.27/codebase-notes-vscode-0.1.27.vsix)
+- [JetBrains 插件（ZIP）](https://github.com/joeljhou/codebase-notes/releases/download/v0.1.28/codebase-notes-jetbrains-0.1.28.zip)
+- [VS Code / TRAE 扩展（VSIX）](https://github.com/joeljhou/codebase-notes/releases/download/v0.1.28/codebase-notes-vscode-0.1.28.vsix)
 - [历史版本与更新说明](https://github.com/joeljhou/codebase-notes/releases)
 
 VS Code / TRAE：在扩展视图右上角菜单中选择 `Install from VSIX...`。
@@ -65,10 +65,7 @@ Project 视图直接在文件和目录后显示备注。
       "_text": "源代码",
       "App.ts": "前端主入口"
     },
-    "scripts": {
-      "_text": "双端工程入口",
-      "_meta": { "style": "important" }
-    }
+    "scripts": { "_text": "双端工程入口", "_meta": { "style": "important" } }
   }
 }
 ```
@@ -76,6 +73,8 @@ Project 视图直接在文件和目录后显示备注。
 普通文件或没有已备注子项的目录直接使用字符串；目录同时有自身备注和子项时用 `_text`。样式和扩展属性按需放在 `_meta` 中，不增加普通备注的冗余字段。根目录备注写在 `notes._text`。
 
 真实文件名以 `_` 开头时，配置中额外加一个 `_`，例如 `_text` 文件写为 `__text`。`_meta` 必须与 `_text` 同时出现，不能在 `_meta` 中再写 `text`。
+
+保存时采用紧凑排版：叶子备注保持单行，节点自身的 `_text` 与简单 `_meta` 合并一行，下级路径逐项展开；复杂元数据按需展开，不因文字长短自动折行。
 
 旧版 v1 扁平配置仍可读取，在下一次成功保存备注时自动无损升级到 v2；仅打开项目不会改写文件。升级保留原有样式、扩展字段和缺失路径备注。团队使用旧插件时需先升级插件，旧插件会将 v2 配置作为未来版本只读处理。
 

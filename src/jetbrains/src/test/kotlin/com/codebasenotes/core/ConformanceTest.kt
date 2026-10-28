@@ -58,10 +58,10 @@ class ConformanceTest {
             "serialize-config" -> {
                 val config = input.withObject("config")
                 val document = ConfigDocument(config, config.withObject("notes"))
-                assertEquals(
-                    expected.path("text").textValue(),
-                    ConfigSerializer.serialize(document).toString(Charsets.UTF_8),
-                )
+                val serialized = ConfigSerializer.serialize(document)
+                assertEquals(expected.path("text").textValue(), serialized.toString(Charsets.UTF_8))
+                val reparsed = assertIs<ParseResult.Writable>(ConfigParser.parse(serialized)).document
+                assertEquals(serialized.toString(Charsets.UTF_8), ConfigSerializer.serialize(reparsed).toString(Charsets.UTF_8))
             }
             "roundtrip-config" -> {
                 val parsed = assertIs<ParseResult.Writable>(ConfigParser.parse(

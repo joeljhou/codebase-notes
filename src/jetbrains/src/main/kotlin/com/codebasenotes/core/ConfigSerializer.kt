@@ -20,18 +20,50 @@ object ConfigSerializer {
         return (render(normalized) + '\n').toByteArray(Charsets.UTF_8)
     }
 
-    private fun render(node: JsonNode, depth: Int = 0): String {
+    private enum class Context { ROOT, NOTES, TREE, GENERIC }
+
+    private fun hasChildren(node: JsonNode): Boolean = node.isContainerNode && !node.isEmpty
+
+    private fun render(node: JsonNode, depth: Int = 0, context: Context = Context.ROOT): String {
         val indent = "  ".repeat(depth)
         val childIndent = "$indent  "
-        return when {
-            node is ObjectNode -> if (node.isEmpty) "{}" else node.properties().joinToString(
-                separator = ",\n", prefix = "{\n", postfix = "\n$indent}",
-            ) { (key, value) ->
-                "$childIndent${ConfigParser.mapper.writeValueAsString(key)}: ${render(value, depth + 1)}"
+        return when (node) {
+            is ObjectNode -> {
+                if (node.isEmpty) return "{}"
+                val isTree = context == Context.NOTES || context == Context.TREE
+                val entries = node.properties().toList()
+                val members = entries.map { (key, value) ->
+                    val childContext = when {
+                        context == Context.ROOT && key == "notes" -> Context.NOTES
+                        isTree && key != "_meta" -> Context.TREE
+                        else -> Context.GENERIC
+                    }
+                    "${ConfigParser.mapper.writeValueAsString(key)}: ${render(value, depth + 1, childContext)}"
+                }.toMutableList()
+                val hasNestedData = if (isTree) {
+                    entries.any { (key, _) -> key != "_text" && key != "_meta" }
+                } else {
+                    entries.any { (_, value) -> hasChildren(value) }
+                }
+                if (context != Context.ROOT && context != Context.NOTES && !hasNestedData &&
+                    members.none { '\n' in it }
+                ) {
+                    return members.joinToString(", ", "{ ", " }")
+                }
+                // Keep the node's own text and simple metadata together, before child paths.
+                if (entries.getOrNull(0)?.key == "_text" && entries.getOrNull(1)?.key == "_meta" &&
+                    isTree && '\n' !in members[1]
+                ) {
+                    members[0] = "${members[0]}, ${members.removeAt(1)}"
+                }
+                members.joinToString(",\n", "{\n", "\n$indent}") { "$childIndent$it" }
             }
-            node is ArrayNode -> if (node.isEmpty) "[]" else node.joinToString(
-                separator = ",\n", prefix = "[\n", postfix = "\n$indent]",
-            ) { "$childIndent${render(it, depth + 1)}" }
+            is ArrayNode -> {
+                if (node.isEmpty) return "[]"
+                val items = node.map { render(it, depth + 1, Context.GENERIC) }
+                if (node.none { hasChildren(it) }) return items.joinToString(", ", "[", "]")
+                items.joinToString(",\n", "[\n", "\n$indent]") { "$childIndent$it" }
+            }
             else -> ConfigParser.mapper.writeValueAsString(node)
         }
     }

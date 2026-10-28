@@ -31,7 +31,12 @@ function orderedKeys(value: JsonObject, preferred: readonly string[]): string[] 
   });
 }
 
-type Context = "root" | "tree" | "metadata" | "generic";
+type Context = "root" | "notes" | "tree" | "metadata" | "generic";
+
+function hasChildren(value: JsonValue): boolean {
+  return typeof value === "object" && value !== null &&
+    Object.keys(value).length > 0;
+}
 
 function render(value: JsonValue, depth: number, context: Context): string {
   if (typeof value !== "object" || value === null) {
@@ -41,14 +46,14 @@ function render(value: JsonValue, depth: number, context: Context): string {
   const childIndent = `${indent}  `;
   if (Array.isArray(value)) {
     if (value.length === 0) return "[]";
-    const items = value.map((child) =>
-      `${childIndent}${render(child, depth + 1, "generic")}`,
-    );
-    return `[\n${items.join(",\n")}\n${indent}]`;
+    const items = value.map((child) => render(child, depth + 1, "generic"));
+    if (!value.some(hasChildren)) return `[${items.join(", ")}]`;
+    return `[\n${items.map((item) => `${childIndent}${item}`).join(",\n")}\n${indent}]`;
   }
+  const isTree = context === "notes" || context === "tree";
   const preferred = context === "root"
     ? ["$schema", "version", "notes"]
-    : context === "tree"
+    : isTree
       ? ["_text", "_meta"]
       : context === "metadata" ? ["style"] : [];
   const keys = orderedKeys(value, preferred);
@@ -57,14 +62,26 @@ function render(value: JsonValue, depth: number, context: Context): string {
   const members = keys.map((key) => {
     let childContext: Context = "generic";
     if (context === "root" && key === "notes") {
-      childContext = "tree";
-    } else if (context === "tree") {
+      childContext = "notes";
+    } else if (isTree) {
       childContext = key === "_meta" ? "metadata" : "tree";
     }
     const child = render(value[key] as JsonValue, depth + 1, childContext);
-    return `${childIndent}${JSON.stringify(key)}: ${child}`;
+    return `${JSON.stringify(key)}: ${child}`;
   });
-  return `{\n${members.join(",\n")}\n${indent}}`;
+  const hasNestedData = isTree
+    ? keys.some((key) => key !== "_text" && key !== "_meta")
+    : keys.some((key) => hasChildren(value[key] as JsonValue));
+  if (context !== "root" && context !== "notes" && !hasNestedData &&
+      members.every((member) => !member.includes("\n"))) {
+    return `{ ${members.join(", ")} }`;
+  }
+  // Keep the node's own text and simple metadata together, before child paths.
+  if (isTree && keys[0] === "_text" && keys[1] === "_meta" &&
+      members[1]?.includes("\n") === false) {
+    members.splice(0, 2, members.slice(0, 2).join(", "));
+  }
+  return `{\n${members.map((member) => `${childIndent}${member}`).join(",\n")}\n${indent}}`;
 }
 
 export function stableSerialize(config: ConfigDocument): string {

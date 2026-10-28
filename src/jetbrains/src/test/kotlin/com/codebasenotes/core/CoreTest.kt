@@ -41,18 +41,8 @@ class CoreTest {
             """{
   "version": 2,
   "notes": {
-    "a": {
-      "_text": "A",
-      "_meta": {
-        "style": "important"
-      }
-    },
-    "b": {
-      "_text": "B",
-      "_meta": {
-        "future": 1
-      }
-    }
+    "a": { "_text": "A", "_meta": { "style": "important" } },
+    "b": { "_text": "B", "_meta": { "future": 1 } }
   },
   "a": false,
   "z": true
