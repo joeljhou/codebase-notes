@@ -1,0 +1,5 @@
+<idea-plugin>
+    <extensions defaultExtensionNs="com.intellij">
+        <gotoDeclarationHandler implementation="com.codebasenotes.jetbrains.ConfigPathGotoDeclarationHandler"/>
+    </extensions>
+</idea-plugin>

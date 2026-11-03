@@ -80,6 +80,7 @@
     ]]></description>
 
     <depends>com.intellij.modules.platform</depends>
+    <depends optional="true" config-file="codebase-notes-json.xml">com.intellij.modules.json</depends>
     <resource-bundle>messages.CodebaseNotesBundle</resource-bundle>
 
     <extensions defaultExtensionNs="com.intellij">
