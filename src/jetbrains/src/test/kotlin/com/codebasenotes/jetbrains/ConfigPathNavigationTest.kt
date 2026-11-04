@@ -32,25 +32,35 @@ import com.intellij.toolWindow.ToolWindowHeadlessManagerImpl
 import java.util.concurrent.CompletableFuture
 
 class ConfigPathNavigationTest : HeavyPlatformTestCase() {
-    fun testVersionOneFlatPathsAndProjectRoot() {
-        addFile("src/main/App.kt")
-        assertResolved("""{"version":1,"notes":{"src/main/A<caret>pp.kt":{"text":"entry"}}}""", "src/main/App.kt")
-        assertResolved("""{"version":1,"notes":{"s<caret>rc":{"text":"source"}}}""", "src")
-        assertResolved("""{"version":1,"notes":{"<caret>.":{"text":"root"}}}""", ".")
+    fun testCompactedPathsAndDescendants() {
+        addFile("src/main/java/cn/geekyspace/app/Main.kt")
+        assertResolved(
+            """{"version":3,"notes":{"src/main/java":{"cn/geekyspace/a<caret>pp":{"Main.kt":"entry"}}}}""",
+            "src/main/java/cn/geekyspace/app",
+        )
+        assertResolved(
+            """{"version":3,"notes":{"src/main/java":{"cn/geekyspace/app":{"M<caret>ain.kt":"entry"}}}}""",
+            "src/main/java/cn/geekyspace/app/Main.kt",
+        )
+        addFile("_private/_text/cn.example/Main.kt")
+        assertResolved(
+            """{"version":3,"notes":{"__private/__text/cn.ex<caret>ample":{"Main.kt":"entry"}}}""",
+            "_private/_text/cn.example",
+        )
     }
 
-    fun testVersionTwoNestedPathsAndStructuralDirectories() {
+    fun testNestedPathsAndStructuralDirectories() {
         addFile("src/main/App.kt")
         assertResolved(
-            """{"version":2,"notes":{"src":{"main":{"A<caret>pp.kt":"entry"}}}}""",
+            """{"version":3,"notes":{"src":{"main":{"A<caret>pp.kt":"entry"}}}}""",
             "src/main/App.kt",
         )
         assertResolved(
-            """{"version":2,"notes":{"s<caret>rc":{"main":{"App.kt":"entry"}}}}""",
+            """{"version":3,"notes":{"s<caret>rc":{"main":{"App.kt":"entry"}}}}""",
             "src",
         )
         assertResolved(
-            """{"version":2,"notes":{"src":{"m<caret>ain":{"_text":"main sources","_meta":{"style":"core"}}}}}""",
+            """{"version":3,"notes":{"src":{"m<caret>ain":{"_text":"main sources","_meta":{"style":"core"}}}}}""",
             "src/main",
         )
     }
@@ -58,21 +68,21 @@ class ConfigPathNavigationTest : HeavyPlatformTestCase() {
     fun testEscapedUnderscoreSegmentsAndReservedNames() {
         addFile("_private/_text/__file.kt")
         assertResolved(
-            """{"version":2,"notes":{"__private":{"__text":{"___f<caret>ile.kt":"entry"}}}}""",
+            """{"version":3,"notes":{"__private":{"__text":{"___f<caret>ile.kt":"entry"}}}}""",
             "_private/_text/__file.kt",
         )
-        assertResolved("""{"version":2,"notes":{"__p<caret>rivate":"private"}}""", "_private")
+        assertResolved("""{"version":3,"notes":{"__p<caret>rivate":"private"}}""", "_private")
     }
 
     fun testUnicodeSpacesAndJsonEscapes() {
         addFile("文档/hello world.txt")
         addFile("quote\"name.txt")
         assertResolved(
-            """{"version":2,"notes":{"\u6587\u6863":{"hello w<caret>orld.txt":"说明"}}}""",
+            """{"version":3,"notes":{"\u6587\u6863":{"hello w<caret>orld.txt":"说明"}}}""",
             "文档/hello world.txt",
         )
         assertResolved(
-            """{"version":2,"notes":{"quote\"n<caret>ame.txt":"quoted name"}}""",
+            """{"version":3,"notes":{"quote\"n<caret>ame.txt":"quoted name"}}""",
             "quote\"name.txt",
         )
     }
@@ -82,13 +92,13 @@ class ConfigPathNavigationTest : HeavyPlatformTestCase() {
         addFile("src/_meta/style")
         addFile("src/style")
         val examples = listOf(
-            """{"version":2,"notes":{"src":{"_<caret>text":"note"}}}""",
-            """{"version":2,"notes":{"src":{"_text":"note","_<caret>meta":{"style":"core"}}}}""",
-            """{"version":2,"notes":{"src":{"_text":"note","_meta":{"s<caret>tyle":"core"}}}}""",
-            """{"version":2,"notes":{"src":"s<caret>rc"}}""",
+            """{"version":3,"notes":{"src":{"_<caret>text":"note"}}}""",
+            """{"version":3,"notes":{"src":{"_text":"note","_<caret>meta":{"style":"core"}}}}""",
+            """{"version":3,"notes":{"src":{"_text":"note","_meta":{"s<caret>tyle":"core"}}}}""",
+            """{"version":3,"notes":{"src":"s<caret>rc"}}""",
             """{"version":1,"notes":{"src":{"t<caret>ext":"source","style":"core"}}}""",
             """{"version":1,"notes":{"src":{"text":"source","s<caret>tyle":"core"}}}""",
-            """{"version":2,"notes":{"src":{"_text":"note","_meta":{"src":{"s<caret>tyle":"core"}}}}}""",
+            """{"version":3,"notes":{"src":{"_text":"note","_meta":{"src":{"s<caret>tyle":"core"}}}}}""",
         )
         for (text in examples) assertNull(text, resolve(text))
     }
@@ -99,8 +109,8 @@ class ConfigPathNavigationTest : HeavyPlatformTestCase() {
         addFile("extension/src")
         for (text in listOf(
             """{"v<caret>ersion":2,"notes":{}}""",
-            """{"version":2,"n<caret>otes":{}}""",
-            """{"version":2,"notes":{},"extension":{"s<caret>rc":"other"}}""",
+            """{"version":3,"n<caret>otes":{}}""",
+            """{"version":3,"notes":{},"extension":{"s<caret>rc":"other"}}""",
         )) assertNull(text, resolve(text))
     }
 
@@ -109,29 +119,29 @@ class ConfigPathNavigationTest : HeavyPlatformTestCase() {
         for (key in listOf("../src/Main.kt", "/src/Main.kt", "src/../Main.kt", "src//Main.kt", "src/", "C:/src/Main.kt", "missing")) {
             assertNull(key, resolve("""{"version":1,"notes":{"<caret>${key}":{"text":"note"}}}"""))
         }
-        for (key in listOf(".", "..", "_private", "_text", "_meta", "src/Main.kt", "missing", CONFIG_FILE_NAME)) {
-            assertNull(key, resolve("""{"version":2,"notes":{"<caret>${key}":"note"}}"""))
+        for (key in listOf(".", "..", "_private", "_text", "_meta", "src//Main.kt", "missing", CONFIG_FILE_NAME)) {
+            assertNull(key, resolve("""{"version":3,"notes":{"<caret>${key}":"note"}}"""))
         }
-        assertNull(resolve("""{"version":2,"notes":{"src":{"..<caret>":{"Main.kt":"note"}}}}"""))
+        assertNull(resolve("""{"version":3,"notes":{"src":{"..<caret>":{"Main.kt":"note"}}}}"""))
         assertNull(resolve("""{"version":1,"notes":{".codebase-notes.j<caret>son":{"text":"self"}}}"""))
     }
 
     fun testUnsupportedVersionsAndNonTreeValuesFailClosed() {
         addFile("src/Main.kt")
-        for (version in listOf("0", "3", "1.0", "2.0", "\"2\"", "null")) {
+        for (version in listOf("0", "1", "2", "4", "3.0", "\"3\"", "null")) {
             assertNull(version, resolve("""{"version":$version,"notes":{"s<caret>rc":"note"}}"""))
         }
         for (value in listOf("null", "true", "1", "[]")) {
-            assertNull(value, resolve("""{"version":2,"notes":{"s<caret>rc":$value}}"""))
+            assertNull(value, resolve("""{"version":3,"notes":{"s<caret>rc":$value}}"""))
         }
         assertNull(resolve("""{"notes":{"s<caret>rc":"note"}}"""))
-        assertNull(resolve("""{"version":2,"notes":{"s<caret>rc":}}"""))
-        assertNull(resolve("""{"version":2,"notes":{"s<caret>rc"""))
+        assertNull(resolve("""{"version":3,"notes":{"s<caret>rc":}}"""))
+        assertNull(resolve("""{"version":3,"notes":{"s<caret>rc"""))
     }
 
     fun testOtherJsonAndNestedConfigurationsAreIgnored() {
         addFile("src/Main.kt")
-        val text = """{"version":2,"notes":{"s<caret>rc":"note"}}"""
+        val text = """{"version":3,"notes":{"s<caret>rc":"note"}}"""
         assertNull(resolve(text, "other.json"))
         assertNull(resolve(text, "src/$CONFIG_FILE_NAME"))
     }
@@ -139,18 +149,18 @@ class ConfigPathNavigationTest : HeavyPlatformTestCase() {
     fun testQuotesAndPunctuationAreNotNavigationTargets() {
         addFile("src/Main.kt")
         for (text in listOf(
-            """{"version":2,"notes":{<caret>"src":"note"}}""",
-            """{"version":2,"notes":{"src<caret>":"note"}}""",
-            """{"version":2,"notes":{"src"<caret>:"note"}}""",
+            """{"version":3,"notes":{<caret>"src":"note"}}""",
+            """{"version":3,"notes":{"src<caret>":"note"}}""",
+            """{"version":3,"notes":{"src"<caret>:"note"}}""",
         )) assertNull(text, resolve(text))
     }
 
     fun testCurrentUnsavedPsiIsUsed() {
         addFile("src/Main.kt")
-        val config = addFile(CONFIG_FILE_NAME, """{"version":2,"notes":{}}""")
+        val config = addFile(CONFIG_FILE_NAME, """{"version":3,"notes":{}}""")
         val manager = FileDocumentManager.getInstance()
         val document = requireNotNull(manager.getDocument(config))
-        val text = """{"version":2,"notes":{"src":{"Main.kt":"unsaved"}}}"""
+        val text = """{"version":3,"notes":{"src":{"Main.kt":"unsaved"}}}"""
         WriteCommandAction.runWriteCommandAction(project) { document.setText(text) }
         PsiDocumentManager.getInstance(project).commitDocument(document)
         val psi = requireNotNull(psiManager.findFile(config))
@@ -163,9 +173,9 @@ class ConfigPathNavigationTest : HeavyPlatformTestCase() {
         manager.saveDocument(document)
     }
 
-    fun testNativeHandlerAndCtrlMouseHoverAreRegistered() {
+    fun testCompactedNativeHandlerAndCtrlMouseHoverAreRegistered() {
         addFile("src/Main.kt")
-        withEditor("""{"version":2,"notes":{"src":{"M<caret>ain.kt":"entry"}}}}""") { editor, psi, offset ->
+        withEditor("""{"version":3,"notes":{"src/M<caret>ain.kt":"entry"}}""") { editor, psi, offset ->
             assertTrue(GotoDeclarationHandler.EP_NAME.extensionList.any { it is ConfigPathGotoDeclarationHandler })
             val target = GotoDeclarationAction.findTargetElement(project, editor, offset)
             assertTrue(target is ConfigPathNavigationElement)
@@ -193,7 +203,7 @@ class ConfigPathNavigationTest : HeavyPlatformTestCase() {
         val editors = FileEditorManager.getInstance(project)
         val openBefore = editors.openFiles.toSet()
 
-        withEditor("""{"version":2,"notes":{"src":{"M<caret>ain.kt":"entry"}}}}""") { editor, psi, _ ->
+        withEditor("""{"version":3,"notes":{"src/M<caret>ain.kt":"entry"}}""") { editor, psi, _ ->
             val context = SimpleDataContext.builder()
                 .add(CommonDataKeys.PROJECT, project)
                 .add(CommonDataKeys.EDITOR, editor)
@@ -228,7 +238,7 @@ class ConfigPathNavigationTest : HeavyPlatformTestCase() {
 
     fun testDeletedTargetCannotNavigate() {
         val file = addFile("src/Main.kt")
-        withEditor("""{"version":2,"notes":{"src":{"M<caret>ain.kt":"entry"}}}}""") { editor, _, offset ->
+        withEditor("""{"version":3,"notes":{"src/M<caret>ain.kt":"entry"}}""") { editor, _, offset ->
             val target = GotoDeclarationAction.findTargetElement(project, editor, offset) as ConfigPathNavigationElement
             WriteCommandAction.runWriteCommandAction(project) { file.delete(this) }
             assertFalse(target.isValid)

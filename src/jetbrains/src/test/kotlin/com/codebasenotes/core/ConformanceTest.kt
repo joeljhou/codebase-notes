@@ -40,9 +40,9 @@ class ConformanceTest {
             "parse-generated-note" -> {
                 val text = input.path("character").textValue().repeat(input.path("count").intValue())
                 val root = ConfigParser.mapper.createObjectNode().apply {
-                    put("version", 1)
+                    put("version", CONFIG_VERSION)
                     set<ObjectNode>("notes", ConfigParser.mapper.createObjectNode().apply {
-                        set<ObjectNode>("a.ts", ConfigParser.mapper.createObjectNode().put("text", text))
+                        put("a.ts", text)
                     })
                 }
                 assertParse(ConfigParser.mapper.writeValueAsString(root), expected)
@@ -58,10 +58,12 @@ class ConformanceTest {
             "serialize-config" -> {
                 val config = input.withObject("config")
                 val document = ConfigDocument(config, config.withObject("notes"))
-                val serialized = ConfigSerializer.serialize(document)
+                val directories = (input.get("directories") as? ObjectNode)?.properties()
+                    ?.associate { it.key to it.value.textValue() }.orEmpty()
+                val serialized = ConfigSerializer.serialize(document, directories)
                 assertEquals(expected.path("text").textValue(), serialized.toString(Charsets.UTF_8))
                 val reparsed = assertIs<ParseResult.Writable>(ConfigParser.parse(serialized)).document
-                assertEquals(serialized.toString(Charsets.UTF_8), ConfigSerializer.serialize(reparsed).toString(Charsets.UTF_8))
+                assertEquals(serialized.toString(Charsets.UTF_8), ConfigSerializer.serialize(reparsed, directories).toString(Charsets.UTF_8))
             }
             "roundtrip-config" -> {
                 val parsed = assertIs<ParseResult.Writable>(ConfigParser.parse(
@@ -72,7 +74,7 @@ class ConformanceTest {
                 val reparsed = assertIs<ParseResult.Writable>(ConfigParser.parse(serialized)).document
                 assertEquals(parsed.notes, reparsed.notes)
                 val expectedRoot = parsed.root.deepCopy().apply {
-                    put("version", 2)
+                    put("version", CONFIG_VERSION)
                     set<ObjectNode>("notes", TreeCodec.encode(parsed.notes))
                 }
                 assertEquals(expectedRoot, reparsed.root)

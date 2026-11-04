@@ -197,7 +197,7 @@ describe("Codebase Notes Extension Host", () => {
 
   it("外部改配置会触发 watcher 刷新", async () => {
     const current = JSON.parse(await readFile(state.configPath, "utf8"));
-    assert.equal(current.version, 2);
+    assert.equal(current.version, 3);
     current.notes["README.md"] = "项目说明";
     current.notes.missing = { "Ghost.ts": "待重新关联" };
     await writeFile(state.configPath, JSON.stringify(current, null, 2) + "\n");
@@ -238,24 +238,21 @@ describe("Codebase Notes Extension Host", () => {
     assert.ok(entries.some((entry) => entry.label === "NewFile.ts"));
   });
 
-  it("旧配置读取不改写，保存时迁移且父备注删除不影响文件展示", async () => {
+  it("最新配置保存保留元数据且父备注删除不影响文件展示", async () => {
     const fileKey = state.noteForKey("src/Main.ts") ? "src/Main.ts" : "src/App.ts";
-    const legacy = JSON.stringify({ version: 1, notes: {
-      ...state.snapshot?.config.notes,
+    let result = await state.repository.commit(state.snapshot, {
       [fileKey]: { text: "应用入口", style: "core" },
       src: { text: "源代码目录", style: "focus", future: [null, true] },
-    } });
-    await writeFile(state.configPath, legacy);
+    });
+    state.accept(result);
+    const text = await readFile(state.configPath, "utf8");
     await state.refresh();
-    assert.equal(await readFile(state.configPath, "utf8"), legacy);
+    assert.equal(await readFile(state.configPath, "utf8"), text);
     assert.equal(state.noteForKey("constructor"), undefined);
     assert.equal(state.noteForKey("__proto__"), undefined);
-    const migrated = await state.repository.setNote(state.snapshot, "src", state.noteForKey("src"));
-    state.accept(migrated);
     api.manager.notifyStateChanged();
-    assert.equal(migrated.kind, "committed");
     const stored = JSON.parse(await readFile(state.configPath, "utf8"));
-    assert.equal(stored.version, 2);
+    assert.equal(stored.version, 3);
     assert.deepEqual(stored.notes.src._meta, { style: "focus", future: [null, true] });
     const roots = await api.treeProvider.getChildren();
     const src = (await api.treeProvider.getChildren(roots[0])).find((entry) => entry.label === "src");
@@ -290,6 +287,66 @@ describe("Codebase Notes Extension Host", () => {
     assert.equal(repeated.kind, "no-change");
     state.accept(repeated);
     assert.equal(await readFile(state.configPath, "utf8"), text);
+  });
+
+  it("压缩目录配置支持链接、未保存文档定位和文件增删自动维护", async () => {
+    const folder = state.folder.uri;
+    const chain = "compact/cn/geekyspace/app";
+    const key = `${chain}/integration`;
+    await vscode.workspace.fs.createDirectory(vscode.Uri.joinPath(folder, key));
+    await vscode.workspace.fs.createDirectory(vscode.Uri.joinPath(folder, chain, "unit"));
+    state.accept(await state.repository.setNote(state.snapshot, key, { text: "集成测试", style: "focus" }));
+    await state.refresh();
+    assert.ok(JSON.parse(await readFile(state.configPath, "utf8")).notes[chain]);
+    const configUri = vscode.Uri.file(state.configPath);
+    const document = await vscode.workspace.openTextDocument(configUri);
+    let links = await vscode.commands.executeCommand("vscode.executeLinkProvider", configUri);
+    const link = links.find((item) => document.getText(item.range) === chain);
+    assert.ok(link, "压缩 key 应有定位链接");
+    assert.equal(link.target.scheme, "command");
+    assert.equal(link.target.path, "codebaseNotes.revealInExplorer");
+    const [argument] = JSON.parse(decodeURIComponent(link.target.query));
+    const target = vscode.Uri.revive ? vscode.Uri.revive(argument) : vscode.Uri.from(argument);
+    assert.equal(target.fsPath, path.join(folder.fsPath, chain));
+    assert.ok(link.tooltip.includes(target.fsPath));
+    const openBefore = vscode.window.visibleTextEditors.map((item) => item.document.uri.toString());
+    await vscode.commands.executeCommand(link.target.path, argument);
+    assert.deepEqual(vscode.window.visibleTextEditors.map((item) => item.document.uri.toString()), openBefore);
+    const editor = await vscode.window.showTextDocument(document);
+    const before = document.getText();
+    const unsaved = JSON.parse(before);
+    unsaved.notes["compact/cn/geekyspace"] = unsaved.notes[chain];
+    delete unsaved.notes[chain];
+    await editor.edit((builder) => builder.replace(new vscode.Range(document.positionAt(0), document.positionAt(before.length)), JSON.stringify(unsaved)));
+    links = await vscode.commands.executeCommand("vscode.executeLinkProvider", configUri);
+    assert.ok(links.some((item) => document.getText(item.range) === "compact/cn/geekyspace"), "链接使用未保存内容");
+    const sibling = vscode.Uri.joinPath(folder, "compact/cn/README.md");
+    await vscode.workspace.fs.writeFile(sibling, Buffer.from("branch"));
+    await new Promise((resolve) => setTimeout(resolve, 350));
+    assert.equal(await readFile(state.configPath, "utf8"), before, "dirty 时不得覆盖用户编辑");
+    await vscode.commands.executeCommand("workbench.action.files.revert");
+    assert.equal(document.isDirty, false);
+    await editor.edit((builder) => builder.insert(new vscode.Position(0, 0), " "));
+    await document.save();
+    await waitUntil(async () => {
+      const notes = JSON.parse(await readFile(state.configPath, "utf8")).notes;
+      return !!notes["compact/cn"]?.["geekyspace/app"];
+    }, "保存后应补做 dirty 期间推迟的维护");
+    await vscode.workspace.fs.delete(sibling);
+    await waitUntil(async () => !!JSON.parse(await readFile(state.configPath, "utf8")).notes[chain], "删除分支后应重新压缩");
+    const newSibling = vscode.Uri.joinPath(folder, "compact/cn/new.txt");
+    await vscode.workspace.fs.writeFile(newSibling, Buffer.from("new branch"));
+    await waitUntil(async () => !!JSON.parse(await readFile(state.configPath, "utf8")).notes["compact/cn"], "新增未备注文件后应拆开压缩链");
+    await vscode.workspace.fs.delete(newSibling);
+    await waitUntil(async () => !!JSON.parse(await readFile(state.configPath, "utf8")).notes[chain], "删除新分支后应重新压缩");
+    const otherUri = vscode.Uri.joinPath(folder, "other.json");
+    await vscode.workspace.fs.writeFile(otherUri, Buffer.from('{"version":3,"notes":{"src":"note"}}'));
+    assert.equal((await vscode.commands.executeCommand("vscode.executeLinkProvider", otherUri)).length, 0);
+    await vscode.workspace.fs.delete(otherUri);
+    await state.refresh();
+    state.accept(await state.repository.setNote(state.snapshot, key, null));
+    await vscode.workspace.fs.delete(vscode.Uri.joinPath(folder, "compact"), { recursive: true });
+    await state.refresh();
   });
 
   it("配置 Document dirty 状态可被写入前置检查识别", async () => {

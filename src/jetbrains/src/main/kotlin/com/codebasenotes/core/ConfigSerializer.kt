@@ -9,10 +9,10 @@ import com.fasterxml.jackson.databind.node.ObjectNode
 object ConfigSerializer {
     val scalarComparator = Comparator<String> { left, right -> compareUnicodeScalars(left, right) }
 
-    fun serialize(document: ConfigDocument): ByteArray {
+    fun serialize(document: ConfigDocument, compactDirectories: Map<String, String> = emptyMap()): ByteArray {
         val root = document.root.deepCopy().apply {
-            put("version", 2)
-            set<ObjectNode>("notes", TreeCodec.encode(document.notes))
+            put("version", CONFIG_VERSION)
+            set<ObjectNode>("notes", TreeCodec.encode(document.notes, compactDirectories))
         }
         val normalized = sortObject(root, listOf("\$schema", "version", "notes")) { key, value ->
             if (key == "notes") sortTree(value as ObjectNode) else sortNode(value)

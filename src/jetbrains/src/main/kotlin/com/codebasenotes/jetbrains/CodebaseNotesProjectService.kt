@@ -4,6 +4,7 @@ import com.codebasenotes.core.CommitResult
 import com.codebasenotes.core.CONFIG_FILE_NAME
 import com.codebasenotes.core.ConfigRepository
 import com.codebasenotes.core.ConfigSnapshot
+import com.codebasenotes.core.DirectoryTopology
 import com.codebasenotes.core.LoadResult
 import com.codebasenotes.core.PathPolicy
 import com.codebasenotes.core.NoteStyle
@@ -23,6 +24,10 @@ import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.VirtualFileManager
 import com.intellij.openapi.vfs.newvfs.BulkFileListener
 import com.intellij.openapi.vfs.newvfs.events.VFileEvent
+import com.intellij.openapi.vfs.newvfs.events.VFileCreateEvent
+import com.intellij.openapi.vfs.newvfs.events.VFileDeleteEvent
+import com.intellij.openapi.vfs.newvfs.events.VFileCopyEvent
+import com.intellij.util.Alarm
 import com.intellij.openapi.vfs.newvfs.events.VFileMoveEvent
 import com.intellij.openapi.vfs.newvfs.events.VFilePropertyChangeEvent
 import java.nio.file.Path
@@ -37,6 +42,7 @@ class CodebaseNotesProjectService(private val project: Project) : Disposable {
     private val configPath: Path? = projectRoot?.resolve(CONFIG_FILE_NAME)
     private val repository = ConfigRepository(localizer = CodebaseNotesBundle.coreLocalizer)
     private val snapshot = AtomicReference<ConfigSnapshot?>()
+    private val topologyAlarm = Alarm(Alarm.ThreadToUse.POOLED_THREAD, this)
     private val stylePreviews = ConcurrentHashMap<String, NoteStyle>()
     private val executor = Executors.newSingleThreadExecutor { task ->
         Thread(task, "codebase-notes-${project.locationHash}").apply { isDaemon = true }
@@ -162,6 +168,7 @@ class CodebaseNotesProjectService(private val project: Project) : Disposable {
         val moves = events.mapNotNull(::movePaths)
         if (moves.isNotEmpty()) {
             submit {
+                if (isConfigDocumentDirty()) return@submit
                 var current = snapshot.get() ?: return@submit
                 for ((oldKey, newKey) in moves) {
                     val result = repository.move(current, oldKey, newKey)
@@ -179,6 +186,25 @@ class CodebaseNotesProjectService(private val project: Project) : Disposable {
         } else if (configChanged) {
             refreshAsync()
         }
+        val keys = snapshot.get()?.document?.notes?.fieldNames()?.asSequence()?.toList().orEmpty()
+        val topologyChanged = events.any { event ->
+            val structural = event is VFileCreateEvent || event is VFileDeleteEvent ||
+                event is VFileCopyEvent || event is VFileMoveEvent ||
+                (event is VFilePropertyChangeEvent && event.propertyName == VirtualFile.PROP_NAME)
+            structural && keyForPath(event.path)?.let { DirectoryTopology.affects(keys, it) } == true
+        }
+        if (configChanged || topologyChanged || moves.isNotEmpty()) scheduleNormalize()
+    }
+
+    private fun scheduleNormalize() {
+        topologyAlarm.cancelAllRequests()
+        topologyAlarm.addRequest({
+            if (!project.isDisposed) submit {
+                val path = configPath ?: return@submit
+                if (snapshot.get() == null || isConfigDocumentDirty()) return@submit
+                repository.normalize(path) { !isConfigDocumentDirty() }?.let(::acceptResult)
+            }
+        }, 150)
     }
 
     private fun movePaths(event: VFileEvent): Pair<String, String>? {

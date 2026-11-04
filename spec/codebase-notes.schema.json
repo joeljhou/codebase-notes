@@ -1,31 +1,14 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "title": "Codebase Notes",
-  "description": "Editor-neutral notes. Version 2 stores a compact directory tree; version 1 flat paths remain readable.",
+  "description": "Editor-neutral notes. Version 3 supports slash-compacted directory paths.",
   "type": "object",
   "required": ["version", "notes"],
   "properties": {
     "$schema": { "type": "string", "format": "uri-reference" },
-    "version": { "type": "integer", "enum": [1, 2] },
-    "notes": { "type": "object" }
+    "version": { "type": "integer", "const": 3 },
+    "notes": { "$ref": "#/$defs/tree" }
   },
-  "allOf": [
-    {
-      "if": { "properties": { "version": { "const": 1 } } },
-      "then": {
-        "properties": {
-          "notes": {
-            "type": "object",
-            "propertyNames": {
-              "pattern": "^(?:\\.|(?!/)(?![A-Za-z]:/)(?!.*\\\\)(?!.*//)(?!.*\\/$)(?!\\.{1,2}(?:/|$))(?!.*\\/\\.{1,2}(?:/|$))(?!\\.codebase-notes\\.json$)(?!.*\\/\\.codebase-notes\\.json$)(?!.*[\\u0000-\\u001F\\u007F]).+)$"
-            },
-            "additionalProperties": { "$ref": "#/$defs/note" }
-          }
-        }
-      },
-      "else": { "properties": { "notes": { "$ref": "#/$defs/tree" } } }
-    }
-  ],
   "additionalProperties": true,
   "$defs": {
     "text": {
@@ -38,15 +21,6 @@
       "type": "string",
       "description": "Code-map emphasis.",
       "enum": ["default", "important", "focus", "core", "stable", "extension"]
-    },
-    "note": {
-      "type": "object",
-      "required": ["text"],
-      "properties": {
-        "text": { "$ref": "#/$defs/text" },
-        "style": { "$ref": "#/$defs/style" }
-      },
-      "additionalProperties": true
     },
     "metadata": {
       "type": "object",
@@ -66,7 +40,7 @@
       "propertyNames": {
         "anyOf": [
           { "enum": ["_text", "_meta"] },
-          { "pattern": "^(?!\\.{1,2}$)(?!_[^_])(?!_$)(?!.*[/\\\\\\u0000-\\u001F\\u007F]).+$" }
+          { "pattern": "^(?![A-Za-z]:/)(?!.*(?:^|/)\\.{1,2}(?:/|$))(?!.*(?:^|/)_(?:[^_]|$))(?!.*[/]{2})(?!/)(?!.*[/]$)(?!.*[\\\\\\u0000-\\u001F\\u007F]).+$" }
         ]
       },
       "additionalProperties": { "$ref": "#/$defs/node" }

@@ -4,16 +4,16 @@
     {
       "id": "forward/unknown-fields",
       "input": {
-        "text": "{\"version\":1,\"notes\":{\"src/a.ts\":{\"text\":\"A\",\"future\":{\"enabled\":true}}},\"rootFuture\":[1,\"x\"]}"
+        "text": "{\"version\":3,\"notes\":{\"src\":{\"a.ts\":{\"_text\":\"A\",\"_meta\":{\"future\":{\"enabled\":true}}}}},\"rootFuture\":[1,\"x\"]}"
       },
       "expected": {
         "mode": "writable"
       }
     },
     {
-      "id": "forward/future-shape-not-validated-as-v1",
+      "id": "forward/future-shape-not-validated-as-current",
       "input": {
-        "text": "{\"version\":3,\"notes\":\"future-format\"}"
+        "text": "{\"version\":4,\"notes\":\"future-format\"}"
       },
       "expected": {
         "mode": "readonly-future",

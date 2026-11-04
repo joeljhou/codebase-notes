@@ -41,13 +41,13 @@ object ConfigParser {
 
             // 未来版本只识别 version，不猜测尚未支持的数据结构。
             val versionValue = version.longValue()
-            if (versionValue > 2) return ParseResult.ReadonlyFuture(versionValue)
-            if (versionValue < 1) return ParseResult.Invalid(localizer.message("config.version.supported"))
+            if (versionValue > CONFIG_VERSION) return ParseResult.ReadonlyFuture(versionValue)
+            if (versionValue != CONFIG_VERSION.toLong()) return ParseResult.Invalid(localizer.message("config.version.supported"))
 
             validateFiniteSafeNumbers(root, localizer)?.let { return ParseResult.Invalid(it) }
             val storedNotes = root.get("notes")
             if (storedNotes !is ObjectNode) return ParseResult.Invalid(localizer.message("notes.object"))
-            val notes = if (versionValue == 2L) TreeCodec.decode(storedNotes, localizer) else storedNotes
+            val notes = TreeCodec.decode(storedNotes, localizer)
             validateNotes(notes, localizer)?.let { return ParseResult.Invalid(it) }
             ParseResult.Writable(ConfigDocument(root, notes))
         } catch (error: Exception) {

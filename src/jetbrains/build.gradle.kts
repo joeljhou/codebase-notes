@@ -81,6 +81,7 @@ kotlin {
 tasks.test {
     useJUnitPlatform()
     workingDir = rootDir
+    inputs.dir(rootDir.resolve("../../spec/conformance"))
 }
 
 tasks.processResources {

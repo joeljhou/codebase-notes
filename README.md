@@ -15,10 +15,10 @@
 
 ## 下载与安装
 
-当前版本：`0.1.29`
+当前版本：`0.1.30`
 
-- [JetBrains 插件（ZIP）](https://github.com/joeljhou/codebase-notes/releases/download/v0.1.29/codebase-notes-jetbrains-0.1.29.zip)
-- [VS Code / TRAE 扩展（VSIX）](https://github.com/joeljhou/codebase-notes/releases/download/v0.1.29/codebase-notes-vscode-0.1.29.vsix)
+- [JetBrains 插件（ZIP）](https://github.com/joeljhou/codebase-notes/releases/download/v0.1.30/codebase-notes-jetbrains-0.1.30.zip)
+- [VS Code / TRAE 扩展（VSIX）](https://github.com/joeljhou/codebase-notes/releases/download/v0.1.30/codebase-notes-vscode-0.1.30.vsix)
 - [历史版本与更新说明](https://github.com/joeljhou/codebase-notes/releases)
 
 VS Code / TRAE：在扩展视图右上角菜单中选择 `Install from VSIX...`。
@@ -59,7 +59,7 @@ Project 视图直接在文件和目录后显示备注。
 
 ```json
 {
-  "version": 2,
+  "version": 3,
   "notes": {
     "src": {
       "_text": "源代码",
@@ -76,7 +76,22 @@ Project 视图直接在文件和目录后显示备注。
 
 保存时采用紧凑排版：叶子备注保持单行，节点自身的 `_text` 与简单 `_meta` 合并一行，下级路径逐项展开；复杂元数据按需展开，不因文字长短自动折行。
 
-旧版 v1 扁平配置仍可读取，在下一次成功保存备注时自动无损升级到 v2；仅打开项目不会改写文件。升级保留原有样式、扩展字段和缺失路径备注。团队使用旧插件时需先升级插件，旧插件会将 v2 配置作为未来版本只读处理。
+当前只支持 v3 配置，不读取或迁移 v1/v2。两端使用相同格式；高于 3 的未来版本只读保护。
+
+没有自身备注、且实际目录只含一个子目录的中间层会自动压缩，例如：
+
+```json
+"src/test/java": {
+  "cn/geekyspace/springaidashscope": {
+    "integration": "集成测试",
+    "unit": "单元测试"
+  }
+}
+```
+
+`/` 表示多级真实路径，`.` 仍是名称的一部分。各段独立进行下划线转义，例如 `_private/_text` 写为 `__private/__text`。新增中间备注或目录分支时拆开，删除后满足条件会重新合并；修改文字、样式以及重命名、移动时都重新维护结构。未备注的实际文件也会阻止合并，删除实体路径不会自动删除其失联备注。
+
+在 `.codebase-notes.json` 的路径 key 上使用 Ctrl/Cmd＋点击，可以在 IDEA 项目树或 VS Code 资源管理器中定位；压缩 key 定位到末端目录，子项定位到对应的完整路径。IDEA 仅选中/展开目标，不打开源文件。配置有未保存编辑时，自动维护不会覆盖用户内容。
 
 | `_meta.style` | 用途                      |
 |---------------|-------------------------|
@@ -197,7 +212,7 @@ docs/platform/      协议、实现、测试计划与设计评审
 ## 进一步阅读
 
 - [文档索引与维护规则](docs/README.md)
-- [配置协议规范（v2 / v1 兼容）](docs/platform/specs/S20260717_platform_codebase_notes_protocol.md)
+- [配置协议规范（v3 压缩目录树）](docs/platform/specs/S20260717_platform_codebase_notes_protocol.md)
 - [实现方案](docs/platform/specs/S20260717_platform_codebase_notes_implementation.md)
 - [双端集成测试计划](docs/platform/specs/S20260717_platform_codebase_notes_integration_test_plan.md)
 - [设计评审结论](docs/platform/reports/R20260717_platform_codebase_notes_design_review.md)

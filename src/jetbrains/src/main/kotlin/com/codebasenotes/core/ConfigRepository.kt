@@ -31,18 +31,14 @@ class ConfigRepository(
     fun create(configPath: Path): CommitResult = safely {
         fileStore.withLock(configPath) {
             when (val current = load(configPath)) {
-                is LoadResult.Loaded -> if (current.snapshot.document.version == 2) {
-                    CommitResult.NoChange(current.snapshot)
-                } else {
-                    write(configPath, current.snapshot.document)
-                }
+                is LoadResult.Loaded -> CommitResult.NoChange(current.snapshot)
                 is LoadResult.ReadonlyFuture -> CommitResult.Readonly(
                     localizer.message("config.version.unsupported", current.version),
                 )
                 is LoadResult.Invalid -> CommitResult.Failed(current.message)
                 LoadResult.Missing -> {
                     val root = ConfigParser.mapper.createObjectNode().apply {
-                        put("version", 2)
+                        put("version", CONFIG_VERSION)
                         set<ObjectNode>("notes", ConfigParser.mapper.createObjectNode())
                     }
                     write(configPath, ConfigDocument(root, root.withObject("notes")))
@@ -64,14 +60,10 @@ class ConfigRepository(
                     when (merged) {
                         is MergeResult.Conflict -> CommitResult.Conflict(merged.paths)
                         is MergeResult.Merged -> {
-                            if (disk.snapshot.document.version == 2 && merged.notes == disk.snapshot.document.notes) {
-                                CommitResult.NoChange(disk.snapshot)
-                            } else {
-                                // 未被本次操作触及的根字段，以锁内刚读到的磁盘版本为准。
-                                val root = disk.snapshot.document.root.deepCopy()
-                                root.set<ObjectNode>("notes", merged.notes)
-                                write(base.configPath, ConfigDocument(root, merged.notes))
-                            }
+                            // 未被本次操作触及的根字段，以锁内刚读到的磁盘版本为准。
+                            val root = disk.snapshot.document.root.deepCopy()
+                            root.set<ObjectNode>("notes", merged.notes)
+                            write(base.configPath, ConfigDocument(root, merged.notes), disk.snapshot)
                         }
                     }
                 }
@@ -99,12 +91,31 @@ class ConfigRepository(
         return commit(base, intent)
     }
 
-    private fun write(path: Path, document: ConfigDocument): CommitResult.Committed {
-        val bytes = ConfigSerializer.serialize(document)
+    fun normalize(configPath: Path, canWrite: () -> Boolean = { true }): CommitResult? = try {
+        fileStore.withLock(configPath) {
+            val current = load(configPath)
+            if (current !is LoadResult.Loaded || !canWrite()) return@withLock null
+            write(configPath, current.snapshot.document, current.snapshot, canWrite)
+        }
+    } catch (error: Throwable) {
+        CommitResult.Failed(error.message ?: localizer.message("config.write.failed"))
+    }
+
+    private fun write(
+        path: Path,
+        document: ConfigDocument,
+        previous: ConfigSnapshot? = null,
+        canWrite: () -> Boolean = { true },
+    ): CommitResult {
+        val links = DirectoryTopology.read(path.parent, document.notes.fieldNames().asSequence().asIterable())
+        val bytes = ConfigSerializer.serialize(document, links)
         // Repository 是所有写入口的最后一道边界，不能依赖 Action 或未来调用者永远传合法对象。
         val validation = ConfigParser.parse(bytes, localizer)
         check(validation is ParseResult.Writable) {
             localizer.message("config.write.invalid")
+        }
+        if (previous != null && (bytes.contentEquals(previous.serialized) || !canWrite())) {
+            return CommitResult.NoChange(previous)
         }
         fileStore.atomicReplace(path, bytes)
         return CommitResult.Committed(ConfigSnapshot(path, validation.document, bytes))

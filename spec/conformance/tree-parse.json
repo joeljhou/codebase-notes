@@ -1,29 +1,372 @@
 {
   "operation": "parse-config",
   "cases": [
-    {"id":"tree/trailing-document","input":{"text":"{\"version\":2,\"notes\":{}} {}"},"expected":{"mode":"invalid","code":"CBN001_INVALID_CONFIG"}},
-    {"id":"tree/minimal-v2","input":{"text":"{\"version\":2,\"notes\":{}}"},"expected":{"mode":"writable"}},
-    {"id":"tree/bom-v2","input":{"text":"﻿{\"version\":2,\"notes\":{\"a\":\"A\"}}"},"expected":{"mode":"writable"}},
-    {"id":"tree/root-must-be-object","input":{"text":"{\"version\":2,\"notes\":\"root\"}"},"expected":{"mode":"invalid","code":"CBN001_INVALID_CONFIG"}},
-    {"id":"tree/meta-requires-text","input":{"text":"{\"version\":2,\"notes\":{\"a\":{\"_meta\":{\"style\":\"core\"}}}}"},"expected":{"mode":"invalid","code":"CBN001_INVALID_CONFIG"}},
-    {"id":"tree/meta-cannot-shadow-text","input":{"text":"{\"version\":2,\"notes\":{\"a\":{\"_text\":\"A\",\"_meta\":{\"text\":\"B\"}}}}"},"expected":{"mode":"invalid","code":"CBN001_INVALID_CONFIG"}},
-    {"id":"tree/meta-must-be-object","input":{"text":"{\"version\":2,\"notes\":{\"a\":{\"_text\":\"A\",\"_meta\":[]}}}"},"expected":{"mode":"invalid","code":"CBN001_INVALID_CONFIG"}},
-    {"id":"tree/meta-invalid-style","input":{"text":"{\"version\":2,\"notes\":{\"a\":{\"_text\":\"A\",\"_meta\":{\"style\":\"danger\"}}}}"},"expected":{"mode":"invalid","code":"CBN001_INVALID_CONFIG"}},
-    {"id":"tree/unknown-reserved-key","input":{"text":"{\"version\":2,\"notes\":{\"_unknown\":\"A\"}}"},"expected":{"mode":"invalid","code":"CBN001_INVALID_CONFIG"}},
-    {"id":"tree/unescaped-underscore","input":{"text":"{\"version\":2,\"notes\":{\"_\":\"A\"}}"},"expected":{"mode":"invalid","code":"CBN001_INVALID_CONFIG"}},
-    {"id":"tree/duplicate-nested-key","input":{"text":"{\"version\":2,\"notes\":{\"a\":{\"b\":\"A\",\"b\":\"B\"}}}"},"expected":{"mode":"invalid","code":"CBN001_INVALID_CONFIG"}},
-    {"id":"tree/blank-note","input":{"text":"{\"version\":2,\"notes\":{\"a\":\" \"}}"},"expected":{"mode":"invalid","code":"CBN001_INVALID_CONFIG"}},
-    {"id":"tree/null-node","input":{"text":"{\"version\":2,\"notes\":{\"a\":null}}"},"expected":{"mode":"invalid","code":"CBN001_INVALID_CONFIG"}},
-    {"id":"tree/array-node","input":{"text":"{\"version\":2,\"notes\":{\"a\":[]}}"},"expected":{"mode":"invalid","code":"CBN001_INVALID_CONFIG"}},
-    {"id":"tree/number-text","input":{"text":"{\"version\":2,\"notes\":{\"a\":{\"_text\":1}}}"},"expected":{"mode":"invalid","code":"CBN001_INVALID_CONFIG"}},
-    {"id":"tree/slash-in-segment","input":{"text":"{\"version\":2,\"notes\":{\"src/a\":\"A\"}}"},"expected":{"mode":"invalid","code":"CBN001_INVALID_CONFIG"}},
-    {"id":"tree/backslash-in-segment","input":{"text":"{\"version\":2,\"notes\":{\"src\\\\a\":\"A\"}}"},"expected":{"mode":"invalid","code":"CBN001_INVALID_CONFIG"}},
-    {"id":"tree/traversal","input":{"text":"{\"version\":2,\"notes\":{\"src\":{\"..\":\"A\"}}}"},"expected":{"mode":"invalid","code":"CBN001_INVALID_CONFIG"}},
-    {"id":"tree/dot-not-a-root-note","input":{"text":"{\"version\":2,\"notes\":{\".\":\"A\"}}"},"expected":{"mode":"invalid","code":"CBN001_INVALID_CONFIG"}},
-    {"id":"tree/empty-segment","input":{"text":"{\"version\":2,\"notes\":{\"\":\"A\"}}"},"expected":{"mode":"invalid","code":"CBN001_INVALID_CONFIG"}},
-    {"id":"tree/drive-path-after-flattening","input":{"text":"{\"version\":2,\"notes\":{\"C:\":{\"src\":\"A\"}}}"},"expected":{"mode":"invalid","code":"CBN001_INVALID_CONFIG"}},
-    {"id":"tree/control-character","input":{"text":"{\"version\":2,\"notes\":{\"a\\u0001\":\"A\"}}"},"expected":{"mode":"invalid","code":"CBN001_INVALID_CONFIG"}},
-    {"id":"tree/config-cannot-have-note","input":{"text":"{\"version\":2,\"notes\":{\"src\":{\".codebase-notes.json\":\"A\"}}}"},"expected":{"mode":"invalid","code":"CBN001_INVALID_CONFIG"}},
-    {"id":"tree/unsafe-meta-number","input":{"text":"{\"version\":2,\"notes\":{\"a\":{\"_text\":\"A\",\"_meta\":{\"future\":9007199254740992}}}}"},"expected":{"mode":"invalid","code":"CBN001_INVALID_CONFIG"}}
+    {
+      "id": "tree/trailing-document",
+      "input": {
+        "text": "{\"version\":3,\"notes\":{}} {}"
+      },
+      "expected": {
+        "mode": "invalid",
+        "code": "CBN001_INVALID_CONFIG"
+      }
+    },
+    {
+      "id": "tree/minimal-v3",
+      "input": {
+        "text": "{\"version\":3,\"notes\":{}}"
+      },
+      "expected": {
+        "mode": "writable"
+      }
+    },
+    {
+      "id": "tree/bom-v3",
+      "input": {
+        "text": "﻿{\"version\":3,\"notes\":{\"a\":\"A\"}}"
+      },
+      "expected": {
+        "mode": "writable"
+      }
+    },
+    {
+      "id": "tree/root-must-be-object",
+      "input": {
+        "text": "{\"version\":3,\"notes\":\"root\"}"
+      },
+      "expected": {
+        "mode": "invalid",
+        "code": "CBN001_INVALID_CONFIG"
+      }
+    },
+    {
+      "id": "tree/meta-requires-text",
+      "input": {
+        "text": "{\"version\":3,\"notes\":{\"a\":{\"_meta\":{\"style\":\"core\"}}}}"
+      },
+      "expected": {
+        "mode": "invalid",
+        "code": "CBN001_INVALID_CONFIG"
+      }
+    },
+    {
+      "id": "tree/meta-cannot-shadow-text",
+      "input": {
+        "text": "{\"version\":3,\"notes\":{\"a\":{\"_text\":\"A\",\"_meta\":{\"text\":\"B\"}}}}"
+      },
+      "expected": {
+        "mode": "invalid",
+        "code": "CBN001_INVALID_CONFIG"
+      }
+    },
+    {
+      "id": "tree/meta-must-be-object",
+      "input": {
+        "text": "{\"version\":3,\"notes\":{\"a\":{\"_text\":\"A\",\"_meta\":[]}}}"
+      },
+      "expected": {
+        "mode": "invalid",
+        "code": "CBN001_INVALID_CONFIG"
+      }
+    },
+    {
+      "id": "tree/meta-invalid-style",
+      "input": {
+        "text": "{\"version\":3,\"notes\":{\"a\":{\"_text\":\"A\",\"_meta\":{\"style\":\"danger\"}}}}"
+      },
+      "expected": {
+        "mode": "invalid",
+        "code": "CBN001_INVALID_CONFIG"
+      }
+    },
+    {
+      "id": "tree/unknown-reserved-key",
+      "input": {
+        "text": "{\"version\":3,\"notes\":{\"_unknown\":\"A\"}}"
+      },
+      "expected": {
+        "mode": "invalid",
+        "code": "CBN001_INVALID_CONFIG"
+      }
+    },
+    {
+      "id": "tree/unescaped-underscore",
+      "input": {
+        "text": "{\"version\":3,\"notes\":{\"_\":\"A\"}}"
+      },
+      "expected": {
+        "mode": "invalid",
+        "code": "CBN001_INVALID_CONFIG"
+      }
+    },
+    {
+      "id": "tree/duplicate-nested-key",
+      "input": {
+        "text": "{\"version\":3,\"notes\":{\"a\":{\"b\":\"A\",\"b\":\"B\"}}}"
+      },
+      "expected": {
+        "mode": "invalid",
+        "code": "CBN001_INVALID_CONFIG"
+      }
+    },
+    {
+      "id": "tree/blank-note",
+      "input": {
+        "text": "{\"version\":3,\"notes\":{\"a\":\" \"}}"
+      },
+      "expected": {
+        "mode": "invalid",
+        "code": "CBN001_INVALID_CONFIG"
+      }
+    },
+    {
+      "id": "tree/null-node",
+      "input": {
+        "text": "{\"version\":3,\"notes\":{\"a\":null}}"
+      },
+      "expected": {
+        "mode": "invalid",
+        "code": "CBN001_INVALID_CONFIG"
+      }
+    },
+    {
+      "id": "tree/array-node",
+      "input": {
+        "text": "{\"version\":3,\"notes\":{\"a\":[]}}"
+      },
+      "expected": {
+        "mode": "invalid",
+        "code": "CBN001_INVALID_CONFIG"
+      }
+    },
+    {
+      "id": "tree/number-text",
+      "input": {
+        "text": "{\"version\":3,\"notes\":{\"a\":{\"_text\":1}}}"
+      },
+      "expected": {
+        "mode": "invalid",
+        "code": "CBN001_INVALID_CONFIG"
+      }
+    },
+    {
+      "id": "tree/slash-compacted-path",
+      "input": {
+        "text": "{\"version\":3,\"notes\":{\"src/a\":\"A\"}}"
+      },
+      "expected": {
+        "mode": "writable"
+      }
+    },
+    {
+      "id": "tree/backslash-in-segment",
+      "input": {
+        "text": "{\"version\":3,\"notes\":{\"src\\\\a\":\"A\"}}"
+      },
+      "expected": {
+        "mode": "invalid",
+        "code": "CBN001_INVALID_CONFIG"
+      }
+    },
+    {
+      "id": "tree/traversal",
+      "input": {
+        "text": "{\"version\":3,\"notes\":{\"src\":{\"..\":\"A\"}}}"
+      },
+      "expected": {
+        "mode": "invalid",
+        "code": "CBN001_INVALID_CONFIG"
+      }
+    },
+    {
+      "id": "tree/dot-not-a-root-note",
+      "input": {
+        "text": "{\"version\":3,\"notes\":{\".\":\"A\"}}"
+      },
+      "expected": {
+        "mode": "invalid",
+        "code": "CBN001_INVALID_CONFIG"
+      }
+    },
+    {
+      "id": "tree/empty-segment",
+      "input": {
+        "text": "{\"version\":3,\"notes\":{\"\":\"A\"}}"
+      },
+      "expected": {
+        "mode": "invalid",
+        "code": "CBN001_INVALID_CONFIG"
+      }
+    },
+    {
+      "id": "tree/drive-path-after-flattening",
+      "input": {
+        "text": "{\"version\":3,\"notes\":{\"C:\":{\"src\":\"A\"}}}"
+      },
+      "expected": {
+        "mode": "invalid",
+        "code": "CBN001_INVALID_CONFIG"
+      }
+    },
+    {
+      "id": "tree/control-character",
+      "input": {
+        "text": "{\"version\":3,\"notes\":{\"a\\u0001\":\"A\"}}"
+      },
+      "expected": {
+        "mode": "invalid",
+        "code": "CBN001_INVALID_CONFIG"
+      }
+    },
+    {
+      "id": "tree/config-cannot-have-note",
+      "input": {
+        "text": "{\"version\":3,\"notes\":{\"src\":{\".codebase-notes.json\":\"A\"}}}"
+      },
+      "expected": {
+        "mode": "invalid",
+        "code": "CBN001_INVALID_CONFIG"
+      }
+    },
+    {
+      "id": "tree/unsafe-meta-number",
+      "input": {
+        "text": "{\"version\":3,\"notes\":{\"a\":{\"_text\":\"A\",\"_meta\":{\"future\":9007199254740992}}}}"
+      },
+      "expected": {
+        "mode": "invalid",
+        "code": "CBN001_INVALID_CONFIG"
+      }
+    },
+    {
+      "id": "tree/duplicate-expanded-note",
+      "input": {
+        "text": "{\"version\": 3, \"notes\": {\"a/b\": \"first\", \"a\": {\"b\": \"second\"}}}"
+      },
+      "expected": {
+        "mode": "invalid",
+        "code": "CBN001_INVALID_CONFIG"
+      }
+    },
+    {
+      "id": "tree/duplicate-expanded-text",
+      "input": {
+        "text": "{\"version\": 3, \"notes\": {\"a/b\": {\"_text\": \"first\"}, \"a\": {\"b\": {\"_text\": \"second\"}}}}"
+      },
+      "expected": {
+        "mode": "invalid",
+        "code": "CBN001_INVALID_CONFIG"
+      }
+    },
+    {
+      "id": "tree/leading-slash",
+      "input": {
+        "text": "{\"version\": 3, \"notes\": {\"/a/b\": \"bad\"}}"
+      },
+      "expected": {
+        "mode": "invalid",
+        "code": "CBN001_INVALID_CONFIG"
+      }
+    },
+    {
+      "id": "tree/trailing-slash",
+      "input": {
+        "text": "{\"version\": 3, \"notes\": {\"a/b/\": \"bad\"}}"
+      },
+      "expected": {
+        "mode": "invalid",
+        "code": "CBN001_INVALID_CONFIG"
+      }
+    },
+    {
+      "id": "tree/empty-middle-segment",
+      "input": {
+        "text": "{\"version\": 3, \"notes\": {\"a//b\": \"bad\"}}"
+      },
+      "expected": {
+        "mode": "invalid",
+        "code": "CBN001_INVALID_CONFIG"
+      }
+    },
+    {
+      "id": "tree/traversal-in-compacted-path",
+      "input": {
+        "text": "{\"version\": 3, \"notes\": {\"a/../b\": \"bad\"}}"
+      },
+      "expected": {
+        "mode": "invalid",
+        "code": "CBN001_INVALID_CONFIG"
+      }
+    },
+    {
+      "id": "tree/dot-in-compacted-path",
+      "input": {
+        "text": "{\"version\": 3, \"notes\": {\"a/./b\": \"bad\"}}"
+      },
+      "expected": {
+        "mode": "invalid",
+        "code": "CBN001_INVALID_CONFIG"
+      }
+    },
+    {
+      "id": "tree/unescaped-reserved-segment",
+      "input": {
+        "text": "{\"version\": 3, \"notes\": {\"a/_text/b\": \"bad\"}}"
+      },
+      "expected": {
+        "mode": "invalid",
+        "code": "CBN001_INVALID_CONFIG"
+      }
+    },
+    {
+      "id": "tree/unescaped-second-underscore",
+      "input": {
+        "text": "{\"version\": 3, \"notes\": {\"a/_private\": \"bad\"}}"
+      },
+      "expected": {
+        "mode": "invalid",
+        "code": "CBN001_INVALID_CONFIG"
+      }
+    },
+    {
+      "id": "tree/compacted-drive-path",
+      "input": {
+        "text": "{\"version\": 3, \"notes\": {\"C:/a\": \"bad\"}}"
+      },
+      "expected": {
+        "mode": "invalid",
+        "code": "CBN001_INVALID_CONFIG"
+      }
+    },
+    {
+      "id": "tree/compacted-config-note",
+      "input": {
+        "text": "{\"version\": 3, \"notes\": {\"a/.codebase-notes.json\": \"bad\"}}"
+      },
+      "expected": {
+        "mode": "invalid",
+        "code": "CBN001_INVALID_CONFIG"
+      }
+    },
+    {
+      "id": "tree/unsupported-version-1",
+      "input": {
+        "text": "{\"version\": 1, \"notes\": {}}"
+      },
+      "expected": {
+        "mode": "invalid",
+        "code": "CBN001_INVALID_CONFIG"
+      }
+    },
+    {
+      "id": "tree/unsupported-version-2",
+      "input": {
+        "text": "{\"version\": 2, \"notes\": {}}"
+      },
+      "expected": {
+        "mode": "invalid",
+        "code": "CBN001_INVALID_CONFIG"
+      }
+    }
   ]
 }

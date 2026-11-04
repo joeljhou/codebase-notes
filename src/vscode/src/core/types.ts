@@ -18,9 +18,11 @@ export interface Note extends JsonObject {
   style?: NoteStyle;
 }
 
+export const CONFIG_VERSION = 3;
+
 // Runtime notes stay flat; version records the source disk format.
 export interface ConfigDocument extends JsonObject {
-  version: 1 | 2;
+  version: typeof CONFIG_VERSION;
   notes: Record<string, Note>;
   $schema?: string;
 }

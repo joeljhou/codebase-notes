@@ -7,6 +7,7 @@ import { ConfigRepository } from "./core/repository.js";
 import { NotesWorkspaceManager } from "./platform/workspace-manager.js";
 import { registerCommands } from "./ui/commands.js";
 import { NoteDecorationProvider } from "./ui/decoration-provider.js";
+import { ConfigPathLinkProvider } from "./ui/config-path-link-provider.js";
 import {
   NotesExplorerProvider,
   type NotesTreeItem,
@@ -51,13 +52,20 @@ export async function activate(
     } else if (!treeView.visible) {
       return;
     }
+    const state = manager.stateForUri(uri);
+    if (state !== undefined && path.resolve(uri.fsPath) === path.resolve(state.configPath)) return;
     const item = await treeProvider.itemForUri(uri);
     if (item !== undefined) {
-      await treeView.reveal(item, {
-        select,
-        focus: false,
-        expand: false,
-      });
+      try {
+        await treeView.reveal(item, {
+          select,
+          focus: false,
+          expand: false,
+        });
+      } catch (error) {
+        // A concurrent config/topology refresh may replace a background reveal's tree item.
+        if (focus) throw error;
+      }
     }
   };
 
@@ -78,6 +86,10 @@ export async function activate(
       }
     }),
     vscode.window.registerFileDecorationProvider(decorationProvider),
+    vscode.languages.registerDocumentLinkProvider(
+      { scheme: "file", pattern: "**/.codebase-notes.json" },
+      new ConfigPathLinkProvider(manager),
+    ),
     ...registerCommands(
       manager,
       {

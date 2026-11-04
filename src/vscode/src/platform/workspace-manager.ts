@@ -1,4 +1,5 @@
 import { ownValue } from "../core/json.js";
+import { affectsNoteTopology } from "../core/directory-topology.js";
 import path from "node:path";
 import * as vscode from "vscode";
 import {
@@ -31,7 +32,7 @@ export class WorkspaceNotesState {
     readonly localize: Localize = defaultLocalize,
   ) {
     this.configPath = path.join(folder.uri.fsPath, ".codebase-notes.json");
-    // v1 先覆盖主流本地文件系统；核心测试不依赖该启发式，而是显式传入。
+    // 先覆盖主流本地文件系统；核心测试显式指定大小写模式。
     this.caseSensitive =
       process.platform !== "darwin" && process.platform !== "win32";
   }
@@ -243,11 +244,38 @@ export class NotesWorkspaceManager implements vscode.Disposable {
     const refresh = (): void => {
       void state.refresh().then(() => this.notifyStateChanged());
     };
+    const topologyWatcher = vscode.workspace.createFileSystemWatcher(
+      new vscode.RelativePattern(folder, "**/*"), false, true, false,
+    );
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    const normalize = (): void => {
+      if (timer !== undefined) clearTimeout(timer);
+      timer = setTimeout(() => {
+        timer = undefined;
+        if (state.snapshot === undefined || state.isConfigDocumentDirty()) return;
+        void this.repository.normalize(state.configPath, () => !state.isConfigDocumentDirty()).then((result) => {
+          if (result !== undefined) state.accept(result);
+          if (result?.kind === "committed") this.notifyStateChanged();
+        });
+      }, 150);
+    };
+    const topologyChanged = (uri: vscode.Uri): void => {
+      if (state.snapshot === undefined) return;
+      const changed = path.relative(folder.uri.fsPath, uri.fsPath).split(path.sep).join("/");
+      if (affectsNoteTopology(Object.keys(state.snapshot.config.notes), changed)) normalize();
+    };
     const disposables = [
       watcher,
       watcher.onDidCreate(refresh),
       watcher.onDidChange(refresh),
       watcher.onDidDelete(refresh),
+      topologyWatcher,
+      topologyWatcher.onDidCreate(topologyChanged),
+      topologyWatcher.onDidDelete(topologyChanged),
+      vscode.workspace.onDidSaveTextDocument((document) => {
+        if (path.resolve(document.uri.fsPath) === path.resolve(state.configPath)) normalize();
+      }),
+      new vscode.Disposable(() => { if (timer !== undefined) clearTimeout(timer); }),
     ];
     this.#entries.set(folder.uri.toString(), { state, disposables });
     return state;
@@ -291,7 +319,7 @@ export class NotesWorkspaceManager implements vscode.Disposable {
     }
 
     for (const [state, moves] of grouped) {
-      if (state.snapshot === undefined) {
+      if (state.snapshot === undefined || state.isConfigDocumentDirty()) {
         continue;
       }
       const result = await this.repository.moveMany(state.snapshot, moves);

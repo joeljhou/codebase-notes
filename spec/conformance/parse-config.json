@@ -2,9 +2,9 @@
   "operation": "parse-config",
   "cases": [
     {
-      "id": "parse/minimal-v1",
+      "id": "parse/minimal-v3",
       "input": {
-        "text": "{\"version\":1,\"notes\":{}}"
+        "text": "{\"version\":3,\"notes\":{}}"
       },
       "expected": {
         "mode": "writable"
@@ -13,16 +13,16 @@
     {
       "id": "parse/all-note-styles",
       "input": {
-        "text": "{\"version\":1,\"notes\":{\"a\":{\"text\":\"A\",\"style\":\"default\"},\"b\":{\"text\":\"B\",\"style\":\"important\"},\"c\":{\"text\":\"C\",\"style\":\"focus\"},\"d\":{\"text\":\"D\",\"style\":\"core\"},\"e\":{\"text\":\"E\",\"style\":\"stable\"},\"f\":{\"text\":\"F\",\"style\":\"extension\"}}}"
+        "text": "{\"version\":3,\"notes\":{\"a\":{\"_text\":\"A\",\"_meta\":{\"style\":\"default\"}},\"b\":{\"_text\":\"B\",\"_meta\":{\"style\":\"important\"}},\"c\":{\"_text\":\"C\",\"_meta\":{\"style\":\"focus\"}},\"d\":{\"_text\":\"D\",\"_meta\":{\"style\":\"core\"}},\"e\":{\"_text\":\"E\",\"_meta\":{\"style\":\"stable\"}},\"f\":{\"_text\":\"F\",\"_meta\":{\"style\":\"extension\"}}}}"
       },
       "expected": {
         "mode": "writable"
       }
     },
     {
-      "id": "parse/legacy-note-style",
+      "id": "parse/note-style",
       "input": {
-        "text": "{\"version\":1,\"notes\":{\"a\":{\"text\":\"A\",\"style\":\"danger\"}}}"
+        "text": "{\"version\":3,\"notes\":{\"a\":{\"_text\":\"A\",\"_meta\":{\"style\":\"danger\"}}}}"
       },
       "expected": {
         "mode": "invalid",
@@ -32,7 +32,7 @@
     {
       "id": "parse/bom",
       "input": {
-        "text": "\ufeff{\"version\":1,\"notes\":{}}"
+        "text": "﻿{\"version\":3,\"notes\":{}}"
       },
       "expected": {
         "mode": "writable"
@@ -41,7 +41,7 @@
     {
       "id": "parse/future-version",
       "input": {
-        "text": "{\"version\":3,\"futureShape\":true}"
+        "text": "{\"version\":4,\"futureShape\":true}"
       },
       "expected": {
         "mode": "readonly-future",
@@ -51,7 +51,7 @@
     {
       "id": "parse/duplicate-key",
       "input": {
-        "text": "{\"version\":1,\"notes\":{},\"notes\":{}}"
+        "text": "{\"version\":3,\"notes\":{},\"notes\":{}}"
       },
       "expected": {
         "mode": "invalid",
@@ -61,7 +61,7 @@
     {
       "id": "parse/trailing-comma",
       "input": {
-        "text": "{\"version\":1,\"notes\":{},}"
+        "text": "{\"version\":3,\"notes\":{},}"
       },
       "expected": {
         "mode": "invalid",
@@ -71,7 +71,7 @@
     {
       "id": "parse/unsafe-integer",
       "input": {
-        "text": "{\"version\":1,\"notes\":{},\"future\":9007199254740992}"
+        "text": "{\"version\":3,\"notes\":{},\"future\":9007199254740992}"
       },
       "expected": {
         "mode": "invalid",
@@ -81,7 +81,7 @@
     {
       "id": "parse/negative-zero",
       "input": {
-        "text": "{\"version\":1,\"notes\":{},\"future\":-0}"
+        "text": "{\"version\":3,\"notes\":{},\"future\":-0}"
       },
       "expected": {
         "mode": "writable"
@@ -90,7 +90,7 @@
     {
       "id": "parse/exponent",
       "input": {
-        "text": "{\"version\":1,\"notes\":{},\"future\":1e2}"
+        "text": "{\"version\":3,\"notes\":{},\"future\":1e2}"
       },
       "expected": {
         "mode": "writable"
@@ -99,7 +99,37 @@
     {
       "id": "parse/non-finite-exponent",
       "input": {
-        "text": "{\"version\":1,\"notes\":{},\"future\":1e400}"
+        "text": "{\"version\":3,\"notes\":{},\"future\":1e400}"
+      },
+      "expected": {
+        "mode": "invalid",
+        "code": "CBN001_INVALID_CONFIG"
+      }
+    },
+    {
+      "id": "parse/decimal-version",
+      "input": {
+        "text": "{\"version\":3.0,\"notes\":{}}"
+      },
+      "expected": {
+        "mode": "invalid",
+        "code": "CBN001_INVALID_CONFIG"
+      }
+    },
+    {
+      "id": "parse/exponent-version",
+      "input": {
+        "text": "{\"version\":3e0,\"notes\":{}}"
+      },
+      "expected": {
+        "mode": "invalid",
+        "code": "CBN001_INVALID_CONFIG"
+      }
+    },
+    {
+      "id": "parse/unsafe-version",
+      "input": {
+        "text": "{\"version\":9007199254740992,\"notes\":{}}"
       },
       "expected": {
         "mode": "invalid",

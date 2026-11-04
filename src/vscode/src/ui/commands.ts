@@ -516,7 +516,7 @@ async function relink(
     if (targetUri !== undefined) {
       void vscode.window.showErrorMessage(
         vscode.l10n.t(
-          "Version 1 can only relink paths within the same workspace root.",
+          "Paths can only be relinked within the same workspace root.",
         ),
       );
     }

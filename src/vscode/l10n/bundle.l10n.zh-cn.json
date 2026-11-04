@@ -23,6 +23,7 @@
   "Codebase Notes path migration conflict: {0}": "Codebase Notes 路径迁移冲突：{0}",
   "Codebase Notes path migration failed: {0}": "Codebase Notes 路径迁移失败：{0}",
   "No configuration": "尚无配置",
+  "Reveal in Explorer: {0}": "在资源管理器中定位：{0}",
   "Open": "打开",
   "Missing Notes": "失联备注",
   "A note cannot contain only whitespace; clear the input to delete it": "备注不能只包含空白；清空输入可删除备注",
@@ -54,7 +55,7 @@
   "Select a note to reveal": "选择要定位的备注",
   "Select a missing note or old directory prefix": "选择缺失的备注或旧目录前缀",
   "Select New Path": "选择新路径",
-  "Version 1 can only relink paths within the same workspace root.": "v1 只支持在同一工作区根目录内重新关联路径。",
+  "Paths can only be relinked within the same workspace root.": "只能在同一工作区根目录内重新关联路径。",
   "Continue": "继续",
   "Move {0} note(s) from {1} to {2}?": "将 {0} 条备注从 {1} 迁移到 {2}？"
 }

@@ -1,6 +1,9 @@
 import { createHash } from "node:crypto";
 import { readFile } from "node:fs/promises";
+import path from "node:path";
 import { isDeepStrictEqual } from "node:util";
+import { readCompactDirectories } from "./directory-topology.js";
+import { CONFIG_VERSION } from "./types.js";
 import { ownValue, setOwn } from "./json.js";
 import { AtomicFileStore, FileStoreError } from "./file-store.js";
 import { mergeNotes, type NoteIntent } from "./merge.js";
@@ -96,10 +99,7 @@ export class ConfigRepository {
       return await this.fileStore.withLock(configPath, async () => {
         const existing = await this.load(configPath);
         if (existing.kind === "loaded") {
-          if (existing.snapshot.config.version === 2) {
-            return { kind: "no-change", snapshot: existing.snapshot };
-          }
-          return this.#write(configPath, existing.snapshot.config);
+          return { kind: "no-change", snapshot: existing.snapshot };
         }
         if (existing.kind === "diagnostic") {
           return {
@@ -115,7 +115,7 @@ export class ConfigRepository {
           };
         }
 
-        const config: ConfigDocument = { version: 2, notes: {} };
+        const config: ConfigDocument = { version: CONFIG_VERSION, notes: {} };
         return this.#write(configPath, config);
       });
     } catch (error) {
@@ -163,20 +163,13 @@ export class ConfigRepository {
             paths: merged.paths,
           };
         }
-        if (
-          disk.snapshot.config.version === 2 &&
-          isDeepStrictEqual(merged.notes, disk.snapshot.config.notes)
-        ) {
-          return { kind: "no-change", snapshot: disk.snapshot };
-        }
-
         // 未 touched 的根字段始终以锁内最新磁盘版本为准。
         const config: ConfigDocument = {
           ...disk.snapshot.config,
-          version: 2,
+          version: CONFIG_VERSION,
           notes: merged.notes,
         };
-        return this.#write(base.configPath, config);
+        return this.#write(base.configPath, config, disk.snapshot);
       });
     } catch (error) {
       return this.#failure(error);
@@ -228,8 +221,26 @@ export class ConfigRepository {
     return this.commit(base, intent);
   }
 
-  async #write(configPath: string, config: ConfigDocument): Promise<OperationResult> {
-    const bytes = Buffer.from(stableSerialize(config), "utf8");
+  async normalize(configPath: string, canWrite: () => boolean = () => true): Promise<OperationResult | undefined> {
+    try {
+      return await this.fileStore.withLock(configPath, async () => {
+        const disk = await this.load(configPath);
+        if (disk.kind !== "loaded" || !canWrite()) return undefined;
+        return this.#write(configPath, disk.snapshot.config, disk.snapshot, canWrite);
+      });
+    } catch (error) {
+      return this.#failure(error);
+    }
+  }
+
+  async #write(
+    configPath: string,
+    config: ConfigDocument,
+    previous?: ConfigSnapshot,
+    canWrite: () => boolean = () => true,
+  ): Promise<OperationResult> {
+    const links = await readCompactDirectories(path.dirname(configPath), Object.keys(config.notes));
+    const bytes = Buffer.from(stableSerialize(config, links), "utf8");
     // Repository 是所有写入口的最后一道边界，不能假设 UI 或第三方 API 调用者已校验。
     const validation = this.parser.parse(bytes);
     if (validation.mode !== "writable") {
@@ -244,6 +255,9 @@ export class ConfigRepository {
                 validation.version,
               ),
       };
+    }
+    if (previous !== undefined && (digest(bytes) === previous.rawDigest || !canWrite())) {
+      return { kind: "no-change", snapshot: previous };
     }
     await this.fileStore.atomicReplace(configPath, bytes);
     return {

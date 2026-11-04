@@ -50,7 +50,7 @@ for (const file of readdirSync(fixturesDirectory).filter((name) =>
             Number(fixtureCase.input.count),
           );
           const result = parser.parse(
-            JSON.stringify({ version: 1, notes: { "a.ts": { text } } }),
+            JSON.stringify({ version: 3, notes: { "a.ts": text } }),
           );
           const actual: Record<string, unknown> = { mode: result.mode };
           if ("code" in result) actual.code = result.code;
@@ -74,12 +74,14 @@ for (const file of readdirSync(fixturesDirectory).filter((name) =>
         case "serialize-config": {
           const text = stableSerialize(
             fixtureCase.input.config as unknown as ConfigDocument,
+            new Map(Object.entries((fixtureCase.input.directories ?? {}) as Record<string, string>)),
           );
           assert.deepEqual({ text }, fixtureCase.expected);
           const reparsed = parser.parse(text);
           assert.equal(reparsed.mode, "writable");
           if (reparsed.mode !== "writable") break;
-          assert.equal(stableSerialize(reparsed.config), text);
+          assert.equal(stableSerialize(reparsed.config,
+            new Map(Object.entries((fixtureCase.input.directories ?? {}) as Record<string, string>))), text);
           break;
         }
         case "roundtrip-config": {
@@ -91,7 +93,7 @@ for (const file of readdirSync(fixturesDirectory).filter((name) =>
           const reparsed = parser.parse(serialized);
           assert.equal(reparsed.mode, "writable");
           if (reparsed.mode !== "writable") break;
-          assert.deepEqual(reparsed.config, { ...parsed.config, version: 2 });
+          assert.deepEqual(reparsed.config, { ...parsed.config, version: 3 });
           assert.equal(stableSerialize(reparsed.config), serialized);
           break;
         }

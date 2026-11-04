@@ -32,14 +32,14 @@ class CoreTest {
     @Test
     fun `serializer preserves unknown fields and uses stable order`() {
         val parsed = assertIs<ParseResult.Writable>(ConfigParser.parse(
-            """{"z":true,"notes":{"b":{"future":1,"text":"B"},"a":{"style":"important","text":"A"}},"version":1,"a":false}"""
+            """{"z":true,"notes":{"b":{"_text":"B","_meta":{"future":1}},"a":{"_text":"A","_meta":{"style":"important"}}},"version":3,"a":false}"""
                 .toByteArray(),
         ))
         val text = ConfigSerializer.serialize(parsed.document).toString(Charsets.UTF_8)
 
         assertEquals(
             """{
-  "version": 2,
+  "version": 3,
   "notes": {
     "a": { "_text": "A", "_meta": { "style": "important" } },
     "b": { "_text": "B", "_meta": { "future": 1 } }
@@ -77,7 +77,7 @@ class CoreTest {
     @Test
     fun `failed rename keeps original bytes`() {
         val path = temporaryDirectory.resolve(CONFIG_FILE_NAME)
-        val original = """{"version":1,"notes":{}}""".toByteArray()
+        val original = """{"version":3,"notes":{}}""".toByteArray()
         Files.write(path, original)
         val store = AtomicFileStore(hooks = AtomicFileHooks(beforeRename = { _, _ -> error("injected") }))
 
@@ -155,7 +155,7 @@ class CoreTest {
     fun `symlink config is readable but never atomically replaced`() {
         val target = temporaryDirectory.resolve("target.json")
         val link = temporaryDirectory.resolve(CONFIG_FILE_NAME)
-        Files.writeString(target, """{"version":1,"notes":{}}""")
+        Files.writeString(target, """{"version":3,"notes":{}}""")
         Files.createSymbolicLink(link, target.fileName)
         val repository = ConfigRepository()
         val loaded = assertIs<LoadResult.Loaded>(repository.load(link)).snapshot
@@ -174,7 +174,7 @@ class CoreTest {
         val base = assertIs<CommitResult.Committed>(repository.create(path)).snapshot
         Files.writeString(
             path,
-            """{"version":1,"notes":{},"external":{"kept":true}}""",
+            """{"version":3,"notes":{},"external":{"kept":true}}""",
         )
 
         val committed = assertIs<CommitResult.Committed>(repository.setNote(base, "a.ts", note("A")))
@@ -196,17 +196,17 @@ class CoreTest {
     }
 
     @Test
-    fun `legacy files migrate on successful save including unchanged values and then stay unchanged`() {
+    fun `save normalizes formatting without losing metadata and stays idempotent`() {
         val path = temporaryDirectory.resolve(CONFIG_FILE_NAME)
-        val legacy = """{"version":1,"notes":{".":{"text":"项目"},"src":{"text":"源码","style":"default","future":{"kept":true}},"src/a":{"text":"A"},"empty":{"text":"空目录"}},"external":[null,true]}"""
+        val legacy = """{"version":3,"notes":{"_text":"项目","src":{"_text":"源码","_meta":{"style":"default","future":{"kept":true}},"a":"A"},"empty":"空目录"},"external":[null,true]}"""
         Files.writeString(path, legacy)
         val repository = ConfigRepository()
         val base = assertIs<LoadResult.Loaded>(repository.load(path)).snapshot
-        assertEquals(1, base.document.version)
+        assertEquals(3, base.document.version)
         assertEquals(legacy, Files.readString(path))
 
         val migrated = assertIs<CommitResult.Committed>(repository.setNote(base, "src", base.document.notes.get("src") as ObjectNode)).snapshot
-        assertEquals(2, migrated.document.version)
+        assertEquals(3, migrated.document.version)
         assertEquals(base.document.notes, migrated.document.notes)
         assertEquals(base.document.root.get("external"), migrated.document.root.get("external"))
         val stored = ConfigParser.mapper.readTree(Files.readAllBytes(path))
@@ -219,12 +219,12 @@ class CoreTest {
     }
 
     @Test
-    fun `create migrates a valid legacy file without removing notes`() {
+    fun `create reuses an existing file without rewriting it`() {
         val path = temporaryDirectory.resolve(CONFIG_FILE_NAME)
-        Files.writeString(path, """{"version":1,"notes":{"a":{"text":"A"}}}""")
+        Files.writeString(path, """{"version":3,"notes":{"a":"A"}}""")
         val repository = ConfigRepository()
-        val migrated = assertIs<CommitResult.Committed>(repository.create(path)).snapshot
-        assertEquals(2, migrated.document.version)
+        val migrated = assertIs<CommitResult.NoChange>(repository.create(path)).snapshot
+        assertEquals(3, migrated.document.version)
         assertEquals("A", migrated.document.notes.path("a").path("text").textValue())
         assertIs<CommitResult.NoChange>(repository.create(path))
     }
@@ -232,7 +232,7 @@ class CoreTest {
     @Test
     fun `parent deletion preserves children and moving preserves metadata before pruning empty branches`() {
         val path = temporaryDirectory.resolve(CONFIG_FILE_NAME)
-        Files.writeString(path, """{"version":2,"notes":{"src":{"_text":"目录","nested":{"a":{"_text":"A","_meta":{"style":"focus","custom":[null,true]}}}},"empty":"空目录"}}""")
+        Files.writeString(path, """{"version":3,"notes":{"src":{"_text":"目录","nested":{"a":{"_text":"A","_meta":{"style":"focus","custom":[null,true]}}}},"empty":"空目录"}}""")
         val repository = ConfigRepository()
         val base = assertIs<LoadResult.Loaded>(repository.load(path)).snapshot
         val removed = assertIs<CommitResult.Committed>(repository.setNote(base, "src", null)).snapshot
@@ -244,9 +244,9 @@ class CoreTest {
     }
 
     @Test
-    fun `old snapshots merge after another client migrated while preserving latest disk root metadata`() {
+    fun `old snapshots merge other client edits while preserving latest disk root metadata`() {
         val path = temporaryDirectory.resolve(CONFIG_FILE_NAME)
-        Files.writeString(path, """{"version":1,"notes":{"a":{"text":"A"}},"external":1}""")
+        Files.writeString(path, """{"version":3,"notes":{"a":"A"},"external":1}""")
         val repository = ConfigRepository()
         val base = assertIs<LoadResult.Loaded>(repository.load(path)).snapshot
         assertIs<CommitResult.Committed>(repository.commit(base, emptyMap()))
@@ -273,14 +273,14 @@ class CoreTest {
     }
 
     @Test
-    fun `failed migrations conflicts invalid trees and future formats keep original bytes`() {
+    fun `failed writes conflicts invalid trees and future formats keep original bytes`() {
         val path = temporaryDirectory.resolve(CONFIG_FILE_NAME)
-        val legacy = """{"version":1,"notes":{"a":{"text":"A"}}}"""
+        val legacy = """{"version":3,"notes":{"a":"A"}}"""
         Files.writeString(path, legacy)
         val repository = ConfigRepository()
         val base = assertIs<LoadResult.Loaded>(repository.load(path)).snapshot
         val failing = ConfigRepository(fileStore = AtomicFileStore(hooks = AtomicFileHooks(
-            beforeRename = { _, _ -> error("migration failure") },
+            beforeRename = { _, _ -> error("write failure") },
         )))
         assertIs<CommitResult.Failed>(failing.commit(base, emptyMap()))
         assertEquals(legacy, Files.readString(path))
@@ -288,7 +288,7 @@ class CoreTest {
         Files.writeString(path, changed)
         assertIs<CommitResult.Conflict>(repository.setNote(base, "a", note("mine")))
         assertEquals(changed, Files.readString(path))
-        for (text in listOf("""{"version":2,"notes":{"a":{"_meta":{}}}}""", """{"version":3,"notes":"future"}""")) {
+        for (text in listOf("""{"version":3,"notes":{"a":{"_meta":{}}}}""", """{"version":4,"notes":"future"}""")) {
             Files.writeString(path, text)
             val result = repository.setNote(base, "a", note("A"))
             assertTrue(result is CommitResult.Failed || result is CommitResult.Readonly)

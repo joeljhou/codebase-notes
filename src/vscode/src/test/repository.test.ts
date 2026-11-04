@@ -169,7 +169,7 @@ test("配置 symlink 可读但不可写", async () => {
   );
   const target = path.join(directory, "actual.json");
   const configPath = path.join(directory, ".codebase-notes.json");
-  await writeFile(target, '{"version":1,"notes":{}}\n');
+  await writeFile(target, '{"version":3,"notes":{}}\n');
   await symlink(target, configPath);
   const repository = new ConfigRepository(createParser());
   const snapshot = await loadedSnapshot(repository, configPath);
@@ -179,7 +179,7 @@ test("配置 symlink 可读但不可写", async () => {
   if (result.kind === "failed") {
     assert.equal(result.code, "CBN007_UNSAFE_CONFIG");
   }
-  assert.equal(await readFile(target, "utf8"), '{"version":1,"notes":{}}\n');
+  assert.equal(await readFile(target, "utf8"), '{"version":3,"notes":{}}\n');
 });
 
 test("写入以磁盘最新根字段为基础", async () => {
@@ -187,8 +187,8 @@ test("写入以磁盘最新根字段为基础", async () => {
   await writeFile(
     configPath,
     JSON.stringify({
-      version: 1,
-      notes: { "b.ts": { text: "B" } },
+      version: 3,
+      notes: { "b.ts": "B" },
       futureRoot: { enabled: true },
     }),
   );
@@ -220,21 +220,21 @@ test("删除 note 使用 null intent，不写空字符串", async () => {
   );
 });
 
-test("迁移只在成功保存时发生，未变化的旧配置也升级且升级后保持幂等", async () => {
+test("读取不改写，保存规范格式并保留元数据且保持幂等", async () => {
   const { configPath, repository } = await createWorkspace();
-  const legacy = '{"version":1,"notes":{"src":{"text":"源代码","style":"default","future":{"__proto__":{"kept":true}}},"src/a.ts":{"text":"A"},"empty":{"text":"空目录"}},"rootFuture":[null,true]}\n';
+  const legacy = '{"version":3,"notes":{"src":{"_text":"源代码","_meta":{"style":"default","future":{"__proto__":{"kept":true}}},"a.ts":"A"},"empty":"空目录"},"rootFuture":[null,true]}\n';
   await writeFile(configPath, legacy);
   const base = await loadedSnapshot(repository, configPath);
-  assert.equal(base.config.version, 1);
+  assert.equal(base.config.version, 3);
   assert.equal(await readFile(configPath, "utf8"), legacy);
 
   const migrated = await repository.setNote(base, "src", base.config.notes.src as Note);
   assert.equal(migrated.kind, "committed");
   if (migrated.kind !== "committed") return;
-  assert.equal(migrated.snapshot.config.version, 2);
+  assert.equal(migrated.snapshot.config.version, 3);
   const bytes = await readFile(configPath, "utf8");
   const stored = JSON.parse(bytes);
-  assert.equal(stored.version, 2);
+  assert.equal(stored.version, 3);
   assert.deepEqual(stored.notes, {
     src: {
       _text: "源代码", _meta: JSON.parse('{"style":"default","future":{"__proto__":{"kept":true}}}'),
@@ -248,19 +248,19 @@ test("迁移只在成功保存时发生，未变化的旧配置也升级且升�
   assert.equal(await readFile(configPath, "utf8"), bytes);
 });
 
-test("create 复用已有旧配置时完成无损迁移", async () => {
+test("create 复用现有配置不改写内容", async () => {
   const { configPath, repository } = await createWorkspace();
-  await writeFile(configPath, '{"version":1,"notes":{".":{"text":"项目"},"src/a":{"text":"A"}}}');
+  await writeFile(configPath, '{"version":3,"notes":{"_text":"项目","src":{"a":"A"}}}');
   const result = await repository.create(configPath);
-  assert.equal(result.kind, "committed");
+  assert.equal(result.kind, "no-change");
   const stored = JSON.parse(await readFile(configPath, "utf8"));
-  assert.deepEqual(stored, { version: 2, notes: { _text: "项目", src: { a: "A" } } });
+  assert.deepEqual(stored, { version: 3, notes: { _text: "项目", src: { a: "A" } } });
   assert.equal((await repository.create(configPath)).kind, "no-change");
 });
 
 test("删除父备注保留子树，移动携带所有元数据，末条删除裁剪空枝", async () => {
   const { configPath, repository } = await createWorkspace();
-  await writeFile(configPath, JSON.stringify({ version: 2, notes: {
+  await writeFile(configPath, JSON.stringify({ version: 3, notes: {
     src: { _text: "目录", nested: { "a.ts": { _text: "A", _meta: { style: "focus", custom: [null, true] } } } },
     empty: "空目录",
   } }));
@@ -277,9 +277,9 @@ test("删除父备注保留子树，移动携带所有元数据，末条删除�
   assert.deepEqual(JSON.parse(await readFile(configPath, "utf8")).notes, { empty: "空目录" });
 });
 
-test("旧快照可在其他客户端完成迁移后继续合并，内容相同不产生原型假冲突", async () => {
+test("旧快照可合并其他客户端修改，内容相同不产生原型假冲突", async () => {
   const { configPath, repository } = await createWorkspace();
-  await writeFile(configPath, '{"version":1,"notes":{"a":{"text":"A"}},"rootFuture":1}');
+  await writeFile(configPath, '{"version":3,"notes":{"a":"A"},"rootFuture":1}');
   const base = await loadedSnapshot(repository, configPath);
   assert.equal((await repository.commit(base, {})).kind, "committed");
   const disk = JSON.parse(await readFile(configPath, "utf8"));
@@ -310,13 +310,13 @@ test("特殊键能够添加、移动、冲突检测和删除，不命中继承�
   assert.deepEqual((await loadedSnapshot(repository, configPath)).config.notes, { toString: { text: "原型文件" } });
 });
 
-test("旧配置迁移失败或与磁盘冲突时原字节保持不变", async () => {
+test("保存失败或与磁盘冲突时原字节保持不变", async () => {
   const { directory, configPath, repository } = await createWorkspace();
-  const legacy = '{"version":1,"notes":{"a":{"text":"A"}}}\n';
+  const legacy = '{"version":3,"notes":{"a":"A"}}\n';
   await writeFile(configPath, legacy);
   const base = await loadedSnapshot(repository, configPath);
   const failing = new ConfigRepository(createParser(), new AtomicFileStore({
-    hooks: { beforeRename: () => { throw new Error("migration failure"); } },
+    hooks: { beforeRename: () => { throw new Error("write failure"); } },
   }));
   assert.equal((await failing.commit(base, {})).kind, "failed");
   assert.equal(await readFile(configPath, "utf8"), legacy);
@@ -329,7 +329,7 @@ test("旧配置迁移失败或与磁盘冲突时原字节保持不变", async ()
 
 test("非法配置和未来版本不会被旧快照保存覆盖", async () => {
   const { configPath, repository, snapshot } = await createWorkspace();
-  for (const text of ['{"version":2,"notes":{"a":{"_meta":{}}}}', '{"version":3,"notes":"future"}']) {
+  for (const text of ['{"version":3,"notes":{"a":{"_meta":{}}}}', '{"version":4,"notes":"future"}']) {
     await writeFile(configPath, text);
     assert.equal((await repository.setNote(snapshot, "a", { text: "A" })).kind, "failed");
     assert.equal(await readFile(configPath, "utf8"), text);

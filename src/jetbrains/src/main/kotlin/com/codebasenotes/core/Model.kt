@@ -3,6 +3,7 @@ package com.codebasenotes.core
 import com.fasterxml.jackson.databind.node.ObjectNode
 
 const val CONFIG_FILE_NAME = ".codebase-notes.json"
+const val CONFIG_VERSION = 3
 
 enum class NoteStyle(val configValue: String) {
     DEFAULT("default"),

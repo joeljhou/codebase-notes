@@ -1,6 +1,8 @@
+import { CONFIG_VERSION } from "./types.js";
 import Ajv2020, { type ErrorObject, type ValidateFunction } from "ajv/dist/2020.js";
 import addFormats from "ajv-formats";
 import {
+  findNodeAtLocation,
   parseTree,
   printParseErrorCode,
   visit,
@@ -111,7 +113,7 @@ export class ConfigParser {
       typeof input === "string" ? input : Buffer.from(input).toString("utf8");
     const text = decoded.startsWith("\uFEFF") ? decoded.slice(1) : decoded;
     const errors: ParseError[] = [];
-    parseTree(text, errors, PARSE_OPTIONS);
+    const tree = parseTree(text, errors, PARSE_OPTIONS);
 
     if (errors.length > 0) {
       const first = errors[0];
@@ -159,10 +161,12 @@ export class ConfigParser {
     }
 
     const version = value.version;
+    const versionNode = tree === undefined ? undefined : findNodeAtLocation(tree, ["version"]);
+    const versionLiteral = versionNode === undefined ? "" : text.slice(versionNode.offset, versionNode.offset + versionNode.length);
     if (
       typeof version !== "number" ||
-      !Number.isInteger(version) ||
-      version < 1
+      !Number.isSafeInteger(version) ||
+      version < 1 || !/^[1-9][0-9]*$/u.test(versionLiteral)
     ) {
       return {
         mode: "invalid",
@@ -172,7 +176,7 @@ export class ConfigParser {
     }
 
     // 未来版本只判断 version，不猜测尚未支持的数据结构。
-    if (version > 2) {
+    if (version > CONFIG_VERSION) {
       return {
         mode: "readonly-future",
         code: "CBN002_FUTURE_VERSION",
@@ -203,9 +207,7 @@ export class ConfigParser {
       const config = value as ConfigDocument;
       return {
         mode: "writable",
-        config: version === 2
-          ? { ...config, notes: decodeTree(value.notes as JsonObject) }
-          : config,
+        config: { ...config, notes: decodeTree(value.notes as JsonObject) },
       };
     } catch (error) {
       return {

@@ -10,7 +10,7 @@ object DefaultCoreLocalizer : CoreLocalizer {
     private val messages = mapOf(
         "config.root.object" to "The configuration root must be an object",
         "config.version.safeInteger" to "version must be a safe integer",
-        "config.version.supported" to "Only version=1 or version=2 is supported",
+        "config.version.supported" to "Only version=3 is supported",
         "tree.invalid" to "Invalid tree node: {0}",
         "json.parse.failed" to "Failed to parse JSON",
         "notes.object" to "notes must be an object",

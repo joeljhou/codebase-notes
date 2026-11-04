@@ -1,6 +1,8 @@
 package com.codebasenotes.jetbrains
 
 import com.codebasenotes.core.CONFIG_FILE_NAME
+import com.codebasenotes.core.CONFIG_VERSION
+import com.codebasenotes.core.TreeCodec
 import com.codebasenotes.core.PathPolicy
 import com.intellij.json.psi.JsonFile
 import com.intellij.json.psi.JsonObject
@@ -29,14 +31,8 @@ internal object ConfigPathResolver {
         val document = config.topLevelValue as? JsonObject ?: return null
         val notes = document.findProperty("notes")?.value as? JsonObject ?: return null
         val property = literal.parent as? JsonProperty ?: return null
-        val key = when (document.findProperty("version")?.value?.text) {
-            "1" -> {
-                if (property.parent != notes || property.value !is JsonObject) return null
-                property.name
-            }
-            "2" -> treeKey(property, notes) ?: return null
-            else -> return null
-        }
+        if (document.findProperty("version")?.value?.text != CONFIG_VERSION.toString()) return null
+        val key = treeKey(property, notes) ?: return null
         if (!PathPolicy.isValidKey(key)) return null
         val target = if (key == ".") root else root.findFileByRelativePath(key) ?: return null
         return ConfigPathTarget(literal, key, target)
@@ -47,10 +43,7 @@ internal object ConfigPathResolver {
         var current = property
         while (true) {
             if (current.value !is JsonObject && current.value !is JsonStringLiteral) return null
-            val encoded = current.name
-            if (encoded.startsWith('_') && !encoded.startsWith("__")) return null
-            val segment = if (encoded.startsWith("__")) encoded.drop(1) else encoded
-            if (segment == "." || '/' in segment || !PathPolicy.isValidKey(segment, structural = true)) return null
+            val segment = TreeCodec.decodeKey(current.name) ?: return null
             segments.add(segment)
             val parent = current.parent as? JsonObject ?: return null
             if (parent == notes) return segments.asReversed().joinToString("/")

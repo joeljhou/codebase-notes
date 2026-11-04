@@ -23,6 +23,7 @@
   "Codebase Notes path migration conflict: {0}": "Codebase Notes path migration conflict: {0}",
   "Codebase Notes path migration failed: {0}": "Codebase Notes path migration failed: {0}",
   "No configuration": "No configuration",
+  "Reveal in Explorer: {0}": "Reveal in Explorer: {0}",
   "Open": "Open",
   "Missing Notes": "Missing Notes",
   "A note cannot contain only whitespace; clear the input to delete it": "A note cannot contain only whitespace; clear the input to delete it",
@@ -54,7 +55,7 @@
   "Select a note to reveal": "Select a note to reveal",
   "Select a missing note or old directory prefix": "Select a missing note or old directory prefix",
   "Select New Path": "Select New Path",
-  "Version 1 can only relink paths within the same workspace root.": "Version 1 can only relink paths within the same workspace root.",
+  "Paths can only be relinked within the same workspace root.": "Paths can only be relinked within the same workspace root.",
   "Continue": "Continue",
   "Move {0} note(s) from {1} to {2}?": "Move {0} note(s) from {1} to {2}?"
 }

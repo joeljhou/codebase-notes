@@ -1,5 +1,5 @@
 {
-  "version": 2,
+  "version": 3,
   "notes": {
     "_text": "★ 跨 IDE 代码备注", "_meta": { "style": "core" },
     "LICENSE": "⚠ MIT 开源许可",
@@ -17,7 +17,7 @@
         "specs": {
           "S20260717_platform_codebase_notes_implementation.md": { "_text": "双端实现方案", "_meta": { "style": "core" } },
           "S20260717_platform_codebase_notes_integration_test_plan.md": { "_text": "双端集成测试", "_meta": { "style": "focus" } },
-          "S20260717_platform_codebase_notes_protocol.md": { "_text": "v1 协议规范", "_meta": { "style": "important" } },
+          "S20260717_platform_codebase_notes_protocol.md": { "_text": "配置协议规范", "_meta": { "style": "important" } },
           "S20260720_platform_ai_initialization.md": { "_text": "AI 初始化规范", "_meta": { "style": "stable" } },
           "S20260721_platform_note_icon_convention.md": { "_text": "备注图标规范", "_meta": { "style": "extension" } }
         }
@@ -38,18 +38,14 @@
         "build.gradle.kts": { "_text": "JetBrains 构建入口", "_meta": { "style": "important" } },
         "src": {
           "main": {
-            "kotlin": {
-              "com": {
-                "codebasenotes": {
-                  "core": {
-                    "_text": "JetBrains 协议核心", "_meta": { "style": "important" },
-                    "AtomicFileStore.kt": { "_text": "原子写入与文件锁", "_meta": { "style": "focus" } },
-                    "ConfigRepository.kt": { "_text": "配置读写主链路", "_meta": { "style": "important" } }
-                  },
-                  "jetbrains": {
-                    "CodebaseNotesProjectService.kt": { "_text": "JetBrains 状态中枢", "_meta": { "style": "core" } }
-                  }
-                }
+            "kotlin/com/codebasenotes": {
+              "core": {
+                "_text": "JetBrains 协议核心", "_meta": { "style": "important" },
+                "AtomicFileStore.kt": { "_text": "原子写入与文件锁", "_meta": { "style": "focus" } },
+                "ConfigRepository.kt": { "_text": "配置读写主链路", "_meta": { "style": "important" } }
+              },
+              "jetbrains": {
+                "CodebaseNotesProjectService.kt": { "_text": "JetBrains 状态中枢", "_meta": { "style": "core" } }
               }
             },
             "resources": {
@@ -58,15 +54,9 @@
               }
             }
           },
-          "test": {
-            "kotlin": {
-              "com": {
-                "codebasenotes": {
-                  "core": {
-                    "ConformanceTest.kt": "共享协议一致性测试"
-                  }
-                }
-              }
+          "test/kotlin/com/codebasenotes": {
+            "core": {
+              "ConformanceTest.kt": "共享协议一致性测试"
             }
           }
         }

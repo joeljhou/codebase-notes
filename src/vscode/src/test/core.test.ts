@@ -23,7 +23,7 @@ test("稳定序列化会保留未知字段并规范字段顺序", () => {
       "中.ts": { future: { z: 2, a: 1 }, style: "important", text: "中文" },
       "a.ts": { text: "A" },
     },
-    version: 1,
+    version: 3,
     $schema: "./spec/codebase-notes.schema.json",
   } as ConfigDocument;
 
@@ -33,7 +33,7 @@ test("稳定序列化会保留未知字段并规范字段顺序", () => {
     [
       "{",
       '  "$schema": "./spec/codebase-notes.schema.json",',
-      '  "version": 2,',
+      '  "version": 3,',
       '  "notes": {',
       '    "a.ts": "A",',
       '    "中.ts": {',

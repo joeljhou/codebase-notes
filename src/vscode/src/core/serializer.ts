@@ -1,3 +1,4 @@
+import { CONFIG_VERSION } from "./types.js";
 import type { ConfigDocument, JsonObject, JsonValue } from "./types.js";
 import { encodeTree } from "./tree-codec.js";
 
@@ -84,11 +85,14 @@ function render(value: JsonValue, depth: number, context: Context): string {
   return `{\n${members.map((member) => `${childIndent}${member}`).join(",\n")}\n${indent}}`;
 }
 
-export function stableSerialize(config: ConfigDocument): string {
+export function stableSerialize(
+  config: ConfigDocument,
+  compactDirectories: ReadonlyMap<string, string> = new Map(),
+): string {
   const root: JsonObject = {
     ...config,
-    version: 2,
-    notes: encodeTree(config.notes),
+    version: CONFIG_VERSION,
+    notes: encodeTree(config.notes, compactDirectories),
   };
   return `${render(root, 0, "root")}\n`;
 }
